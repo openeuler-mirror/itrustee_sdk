@@ -1,0 +1,9 @@
+v5.1.0 (Apr 2, 2020)
+======
+Features:
+---------
+* add support for new product(kunpeng series)
+
+Fixes:
+------
+* fix build warnings in building 64 bits TA

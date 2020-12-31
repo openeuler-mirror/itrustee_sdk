@@ -1,36 +1,20 @@
-# itrustee_sdk
+iTrustee SDK
+============
 
-#### Description
-Confidential computing framework for developing TA on itrustee OS
+Getting Started
+---------------
+Before setup your own project, please download libboundscheck software for secure function library.
+Decompress the openeuler-libboundscheck-master.zip package, then put this software to thirdparty/open_source path.
+Ensure that the header file path is thirdparty/open_source/libboundscheck/include.
+This software download address is https://gitee.com/openeuler/libboundscheck.
 
-#### Software Architecture
-Software architecture description
+build demo project:
+$ cd test/CA/helloworld/cloud
+$ make
+$ cd test/TA/helloworld/cloud
+$ make
+copy build result CA executable file and TA binary(xxx.sec) to /vendor/bin/
+#the path "/vendor/bin/" may be changed as your opinion, make sure it consistent with the path defined in your TA's source code
+$ /vendor/bin/teec_hello
 
-#### Installation
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### Instructions
-
-1.  xxxx
-2.  xxxx
-3.  xxxx
-
-#### Contribution
-
-1.  Fork the repository
-2.  Create Feat_xxx branch
-3.  Commit your code
-4.  Create Pull Request
-
-
-#### Gitee Feature
-
-1.  You can use Readme\_XXX.md to support different languages, such as Readme\_en.md, Readme\_zh.md
-2.  Gitee blog [blog.gitee.com](https://blog.gitee.com)
-3.  Explore open source project [https://gitee.com/explore](https://gitee.com/explore)
-4.  The most valuable open source project [GVP](https://gitee.com/gvp)
-5.  The manual of Gitee [https://gitee.com/help](https://gitee.com/help)
-6.  The most popular members  [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+for more details please refor "iTrustee SDK开发者手册.chm"
