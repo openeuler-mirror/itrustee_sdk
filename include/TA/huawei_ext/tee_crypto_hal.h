@@ -8,9 +8,6 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
- * Author: jialingyu
- * Create: 2019-01-20
- * Description: crypto hal info function
  */
 
 #ifndef TEE_CRYPTO_HAL_H

@@ -8,9 +8,6 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
- * Author: Hanpeng
- * Create: 2018-12-13
- * Description: tee core api definitions
  */
 #ifndef __TEE_CORE_API_H
 #define __TEE_CORE_API_H

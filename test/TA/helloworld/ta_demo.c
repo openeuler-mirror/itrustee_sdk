@@ -8,9 +8,6 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
- * Description: TA template code for reference
- * Author: huangjiankang
- * Create: 2020-02-20
  */
 
 #include <tee_ext_api.h>

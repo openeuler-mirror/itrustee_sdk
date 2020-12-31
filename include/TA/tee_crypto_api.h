@@ -8,9 +8,6 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
- * Author: jialingyu
- * Create: 2018-12-13
- * Description: tee crypto definitions
  */
 
 #ifndef TEE_CRYPTO_API_H

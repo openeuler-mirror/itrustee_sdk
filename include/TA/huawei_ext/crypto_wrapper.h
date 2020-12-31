@@ -8,9 +8,6 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
- * Author: Yaodongdong
- * Create: 2019-05-29
- * Description: soft engine in boringssl
  */
 #ifndef __CRYPTO_WRAPPER_H__
 #define __CRYPTO_WRAPPER_H__

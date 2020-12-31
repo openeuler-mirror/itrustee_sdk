@@ -8,9 +8,6 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
- * Author: huangjiankang
- * Create: 2012-03-20
- * Description: Tee ext api header file
  */
 
 #ifndef TEE_EXT_API_H

@@ -8,9 +8,6 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
- * Author: zhangdeyao
- * Create: 2013-04-22
- * Description: linked list data types and basic operations
  */
 
 #ifndef TEE_CLIENT_LIST_H

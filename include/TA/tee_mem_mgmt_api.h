@@ -8,9 +8,6 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
- * Author: yaodongdong
- * Create: 2012-12-31
- * Description: Header file of memory management api
  */
 
 #ifndef TEE_MEM_MGMT_API_H
