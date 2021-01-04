@@ -8,9 +8,6 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
- * Author: hanpeng
- * Create: 2013-04-22
- * Description: data type and structure definition according to GP
  */
 
 #ifndef _TEE_CLIENT_TYPE_H_

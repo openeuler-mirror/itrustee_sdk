@@ -11,9 +11,6 @@
 # KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
 # NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 # See the Mulan PSL v2 for more details.
-# Description: tools for generating a trusted application load image
-# Author: Li mingjuan
-# Create: 2020-10-27
 #----------------------------------------------------------------------------
 
 import struct

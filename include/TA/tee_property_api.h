@@ -8,9 +8,6 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
- * Author: huangjiankang
- * Create: 2012-01-20
- * Description: TEE property implementation header file
  */
 
 #ifndef TEE_PROPERTY_API_H

@@ -8,9 +8,6 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
- * Author: lipeng
- * Create: 2019.4.30
- * Description: this file is used for adapting interfaces in libteec.so
  */
 
 #include <dlfcn.h>

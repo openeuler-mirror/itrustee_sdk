@@ -8,9 +8,6 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
- * Author: zhangdeyao
- * Create: 2020-03-31
- * Description: TEE client log api
  */
 
 #ifndef TEE_CLIENT_LOG_H

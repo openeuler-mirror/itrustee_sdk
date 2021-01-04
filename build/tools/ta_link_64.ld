@@ -8,9 +8,6 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
- * Description: Describe the link file for 64bits TA
- * Author: He pengfei
- * Create: 2019-12-03
  */
 
 OUTPUT_FORMAT("elf64-littleaarch64", "elf64-bigaarch64",
