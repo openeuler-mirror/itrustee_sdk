@@ -2,6 +2,6 @@ gpd.ta.appID:   		e3d37f4a-f24c-48d0-8884-3bdd6c44e988
 gpd.ta.service_name:		demo-ta
 gpd.ta.singleInstance:		true
 gpd.ta.multiSession: 		false
-gpd.ta.instanceKeepAlive:	False
+gpd.ta.instanceKeepAlive:	false
 gpd.ta.dataSize:		81920
 gpd.ta.stackSize:		8192
