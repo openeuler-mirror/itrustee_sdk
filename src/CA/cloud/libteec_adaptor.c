@@ -41,6 +41,10 @@ typedef TEEC_Result (*allocateSharedMemory_f)(TEEC_Context *context,
     TEEC_SharedMemory *sharedMem);
 typedef void (*releaseSharedMemory_f)(TEEC_SharedMemory *sharedMem);
 typedef void (*requestCancellation_f)(TEEC_Operation *operation);
+typedef TEEC_Result (*EXT_RegisterAgent_f)(uint32_t agentId, int *devFd, void **buffer);
+typedef TEEC_Result (*EXT_WaitEvent_f)(uint32_t agentId, int devFd);
+typedef TEEC_Result (*EXT_SendEventResponse_f)(uint32_t agentId, int devFd);
+typedef TEEC_Result (*EXT_UnregisterAgent_f)(uint32_t agentId, int devFd, void **buffer);
 
 typedef struct {
     initializeContext_f     initializeContextFn;
@@ -52,6 +56,10 @@ typedef struct {
     allocateSharedMemory_f  allocateSharedMemoryFn;
     releaseSharedMemory_f   releaseSharedMemoryFn;
     requestCancellation_f   requestCancellationFn;
+    EXT_RegisterAgent_f     EXT_RegisterAgentFn;
+    EXT_WaitEvent_f         EXT_WaitEventFn;
+    EXT_SendEventResponse_f EXT_SendEventResponseFn;
+    EXT_UnregisterAgent_f   EXT_UnregisterAgentFn;
 } TeecApiTable;
 
 static TeecApiTable g_teecApiTable;
@@ -92,6 +100,34 @@ static TEEC_Result GetBasicApiSymbol(TeecApiTable *teecApiTable)
         (invokeCommand_f)(dlsym(g_libTeecHandle, "TEEC_InvokeCommand"));
     if (teecApiTable->invokeCommandFn == NULL) {
         TEEC_Error("get symbol TEEC_InvokeCommand failed\n");
+        return TEEC_ERROR_GENERIC;
+    }
+    
+    teecApiTable->EXT_RegisterAgentFn =
+        (EXT_RegisterAgent_f)(dlsym(g_libTeecHandle, "TEEC_EXT_RegisterAgent"));
+    if (teecApiTable->EXT_RegisterAgentFn == NULL) {
+        TEEC_Error("get symbol TEEC_EXT_RegisterAgent failed\n");
+        return TEEC_ERROR_GENERIC;
+    }
+
+    teecApiTable->EXT_WaitEventFn =
+        (EXT_WaitEvent_f)(dlsym(g_libTeecHandle, "TEEC_EXT_WaitEvent"));
+    if (teecApiTable->EXT_WaitEventFn == NULL) {
+        TEEC_Error("get symbol TEEC_EXT_WaitEvent failed\n");
+        return TEEC_ERROR_GENERIC;
+    }
+
+    teecApiTable->EXT_SendEventResponseFn =
+        (EXT_SendEventResponse_f)(dlsym(g_libTeecHandle, "TEEC_EXT_SendEventResponse"));
+    if (teecApiTable->EXT_SendEventResponseFn == NULL) {
+        TEEC_Error("get symbol TEEC_EXT_SendEventResponse failed\n");
+        return TEEC_ERROR_GENERIC;
+    }
+
+    teecApiTable->EXT_UnregisterAgentFn =
+        (EXT_UnregisterAgent_f)(dlsym(g_libTeecHandle, "TEEC_EXT_UnregisterAgent"));
+    if (teecApiTable->EXT_UnregisterAgentFn == NULL) {
+        TEEC_Error("get symbol TEEC_EXT_UnregisterAgent failed\n");
         return TEEC_ERROR_GENERIC;
     }
 
@@ -266,3 +302,48 @@ void TEEC_RequestCancellation(TEEC_Operation *operation)
 
     g_teecApiTable.requestCancellationFn(operation);
 }
+
+/* This function is not support for usual user currently(just for secGear) */
+TEEC_Result TEEC_EXT_RegisterAgent(uint32_t agentId, int *devFd, void **buffer)
+{
+    if (g_teecApiTable.EXT_RegisterAgentFn == NULL) {
+        TEEC_Error("TEEC_EXT_RegisterAgent is null!\n");
+        return TEEC_ERROR_GENERIC;
+    }
+
+    g_teecApiTable.EXT_RegisterAgentFn(agentId, devFd, buffer);
+}
+
+/* This function is not support for usual user currently(just for secGear) */
+TEEC_Result TEEC_EXT_WaitEvent(uint32_t agentId, int devFd)
+{
+    if (g_teecApiTable.EXT_WaitEventFn == NULL) {
+        TEEC_Error("TEEC_EXT_WaitEvent is null!\n");
+        return TEEC_ERROR_GENERIC;
+    }
+
+    g_teecApiTable.EXT_WaitEventFn(agentId, devFd);
+}
+
+/* This function is not support for usual user currently(just for secGear) */
+TEEC_Result TEEC_EXT_SendEventResponse(uint32_t agentId, int devFd)
+{
+    if (g_teecApiTable.EXT_SendEventResponseFn == NULL) {
+        TEEC_Error("TEEC_EXT_SendEventResponse is null!\n");
+        return TEEC_ERROR_GENERIC;
+    }
+
+    g_teecApiTable.EXT_SendEventResponseFn(agentId, devFd);
+}
+
+/* This function is not support for usual user currently(just for secGear) */
+TEEC_Result TEEC_EXT_UnregisterAgent(uint32_t agentId, int devFd, void **buffer)
+{
+    if (g_teecApiTable.EXT_UnregisterAgentFn == NULL) {
+        TEEC_Error("TEEC_EXT_UnregisterAgent is null!\n");
+        return TEEC_ERROR_GENERIC;
+    }
+
+    g_teecApiTable.EXT_UnregisterAgentFn(agentId, devFd, buffer);
+}
+
