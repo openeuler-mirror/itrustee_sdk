@@ -12,6 +12,7 @@ COBJS := $(SRC:%.c=%.o)
 TARGET = $(COBJS)
 
 sec_binary:combine
+	cp ../config.mk ./
 	cp ../manifest.txt ./
 	python3 -B ${SIGNTOOL_DIR}/signtool_v3.py ${CUR_DIR} ${CUR_DIR} --config ${SIGNTOOL_DIR}/cloud/config_cloud.ini
 
