@@ -6,7 +6,7 @@ LIBC=$(iTrustee_SDK_PATH)/thirdparty/open_source/musl
 LIBSECURE=$(iTrustee_SDK_PATH)/thirdparty/open_source/libboundscheck/
 
 # set compile parameters
-CFLAGS := -O -W -Wall
+CFLAGS += -O -W -Wall
 CFLAGS += -Werror
 CFLAGS += -fno-short-enums
 CFLAGS += -fno-omit-frame-pointer
