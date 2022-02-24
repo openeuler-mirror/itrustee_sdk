@@ -6,7 +6,7 @@ cmake_policy (SET CMP0037 OLD)
 set(iTrustee_SDK_PATH ${PROJECT_SOURCE_DIR}/../../../../)
 set(SIGNTOOL_DIR ${iTrustee_SDK_PATH}/build/signtools)
 set(LIBC ${iTrustee_SDK_PATH}/thirdparty/open_source/musl)
-set(LIBSECURE ${iTrustee_SDK_PATH}/thirdparty/open_source/liboundscheck) 
+set(LIBSECURE ${iTrustee_SDK_PATH}/thirdparty/open_source/libboundscheck) 
 
 # Add source files
 file(GLOB SRCS "./*.c")
