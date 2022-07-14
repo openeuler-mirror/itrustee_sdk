@@ -8,6 +8,7 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
+ * Description: TEE property implementation header file
  */
 
 #ifndef TEE_PROPERTY_API_H
@@ -69,7 +70,7 @@ TEE_Result TEE_GetPropertyAsBool(TEE_PropSetHandle propsetOrEnumerator, const ch
  */
 TEE_Result TEE_GetPropertyAsU32(TEE_PropSetHandle propsetOrEnumerator, const char *name, uint32_t *value);
 
-#if (API_LEVEL >= API_LEVEL1_2)
+#if defined(API_LEVEL) && (API_LEVEL >= API_LEVEL1_2)
 /*
  * retrieves a single property in a property set and converts its value to a 64-bit unsigned integer
  *

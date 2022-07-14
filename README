@@ -9,12 +9,12 @@ Ensure that the header file path is thirdparty/open_source/libboundscheck/includ
 This software download address is https://gitee.com/openeuler/libboundscheck.
 
 build demo project:
-$ cd test/CA/helloworld/cloud
+$ cd test/CA/helloworld
 $ make
-$ cd test/TA/helloworld/cloud
+$ cd test/TA/helloworld
 $ make
 copy build result CA executable file and TA binary(xxx.sec) to /vendor/bin/
 #the path "/vendor/bin/" may be changed as your opinion, make sure it consistent with the path defined in your TA's source code
-$ /vendor/bin/teec_hello
+$ /vendor/bin/demo_hello
 
 for more details please refor "iTrustee SDK开发者手册.chm"

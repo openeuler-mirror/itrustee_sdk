@@ -36,6 +36,7 @@ int rand (void);
 void srand (unsigned);
 
 void *malloc (size_t);
+void *malloc_coherent(size_t n);
 void *calloc (size_t, size_t);
 void *realloc (void *, size_t);
 void free (void *);

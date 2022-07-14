@@ -8,6 +8,7 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
+ * Description: C file template for CA
  */
 
 #include <stdio.h>
@@ -25,10 +26,8 @@
 #define OPERATION_START_FLAG 1
 #define OUT_BUFF_INDEX 3
 
-static const TEEC_UUID DEMO_TEMPLATE_UUID =
-{
-    0xe3d37f4a, 0xf24c, 0x48d0,
-    { 0x88, 0x84, 0x3b, 0xdd, 0x6c, 0x44, 0xe9, 0x88 }
+static const TEEC_UUID g_demoTemplateUuid = {
+    0xe3d37f4a, 0xf24c, 0x48d0, { 0x88, 0x84, 0x3b, 0xdd, 0x6c, 0x44, 0xe9, 0x88 }
 };
 
 enum {
@@ -57,16 +56,14 @@ int main(void)
     operation.paramTypes = TEEC_PARAM_TYPES(
         TEEC_NONE,
         TEEC_NONE,
-        TEEC_MEMREF_TEMP_INPUT,
-        TEEC_MEMREF_TEMP_INPUT);
+        TEEC_NONE,
+        TEEC_NONE);
 
     result = TEEC_OpenSession(
-        &context, &session, &DEMO_TEMPLATE_UUID, TEEC_LOGIN_IDENTIFY, NULL, &operation, &origin);
+        &context, &session, &g_demoTemplateUuid, TEEC_LOGIN_IDENTIFY, NULL, &operation, &origin);
     if (result != TEEC_SUCCESS) {
         printf("teec open session failed");
         goto cleanup_2;
-    } else {
-        TEEC_Debug("teec open session successed");
     }
 
     operation.started = OPERATION_START_FLAG;

@@ -1,4 +1,4 @@
-#define SHMLBA 4096
+#define SHMLBA (4*4096)
 
 struct shmid_ds {
 	struct ipc_perm shm_perm;

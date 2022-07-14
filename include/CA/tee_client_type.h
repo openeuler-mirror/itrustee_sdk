@@ -8,46 +8,19 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
+ * Description: data type and structure definition according to GP
  */
 
 #ifndef _TEE_CLIENT_TYPE_H_
 #define _TEE_CLIENT_TYPE_H_
 
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stddef.h>
 #include <semaphore.h>
 #include "tee_client_list.h"
 #include "tee_client_constants.h"
-
-typedef unsigned int      uint32_t;
-
-typedef signed int        int32_t;
-
-typedef unsigned short    uint16_t;
-
-typedef signed short      int16_t;
-
-typedef unsigned char     uint8_t;
-
-typedef signed char       int8_t;
-
-#ifndef __cplusplus
-#ifndef bool
-#define bool    uint8_t
-#endif
-#endif
-
-#ifndef true
-#define true    1
-#endif
-
-#ifndef false
-#define false   0
-#endif
-
-#ifndef NULL
-#define NULL 0
-#endif
 
 typedef enum TEEC_ReturnCode TEEC_Result;
 
@@ -63,17 +36,23 @@ typedef struct {
     uint8_t *ta_path;
     struct ListNode session_list;
     struct ListNode shrd_mem_list;
-    struct {
-        void *buffer;
-        sem_t buffer_barrier;
-    } share_buffer;
+    union {
+        struct {
+            void *buffer;
+            sem_t buffer_barrier;
+        } share_buffer;
+        uint64_t imp;          /* for adapt */
+    };
 } TEEC_Context;
 
 typedef struct {
     uint32_t session_id;
     TEEC_UUID service_id;
     uint32_t ops_cnt;
-    struct ListNode head;
+    union {
+        struct ListNode head;
+        uint64_t imp;          /* for adapt */
+    };
     TEEC_Context *context;
 } TEEC_Session;
 
@@ -83,7 +62,10 @@ typedef struct {
     uint32_t flags;         /* reference to TEEC_SharedMemCtl */
     uint32_t ops_cnt;
     bool is_allocated;      /* identify whether the memory is registered or allocated */
-    struct ListNode head;
+    union {
+        struct ListNode head;
+        void* imp;          /* for adapt, imp is not used by system CA, only for vendor CA */
+    };
     TEEC_Context *context;
 } TEEC_SharedMemory;
 

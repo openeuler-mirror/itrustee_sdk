@@ -8,6 +8,7 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
+ * Description: TA template code for reference
  */
 
 #include <tee_ext_api.h>
@@ -24,7 +25,7 @@ enum {
 
 static TEE_Result get_ta_version(char* buffer, size_t *buf_len)
 {
-    char *version = TA_TEMPLATE_VERSION;
+    const char *version = TA_TEMPLATE_VERSION;
 
     if (*buf_len < strlen(version) + 1) {
         tloge("buffer is too short for storing result");
@@ -49,14 +50,12 @@ static TEE_Result get_ta_version(char* buffer, size_t *buf_len)
  */
 TEE_Result TA_CreateEntryPoint(void)
 {
-    TEE_Result ret = TEE_ERROR_GENERIC;
+    TEE_Result ret;
 
     tlogd("----- TA entry point ----- ");
     tlogd("TA version: %s", TA_TEMPLATE_VERSION);
 
-#ifdef CONFIG_AUTH_CLOUD
-    ret = addcaller_ca_exec("/vendor/bin/teec_hello", "root");
-#endif
+    ret = addcaller_ca_exec("/vendor/bin/demo_hello", "root");
     if (ret == TEE_SUCCESS) {
         tlogd("TA entry point: add ca whitelist success");
     } else {

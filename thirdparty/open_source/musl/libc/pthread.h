@@ -6,6 +6,24 @@ extern "C" {
 
 #include <features.h>
 
+/* Musl did not provide the "owner" marco directly,
+ * so users can not access the mutex-owner-ID.
+ * Thus we added this macro for getting the owner-ID
+ * of the mutex. */
+#define MUTEX_OWNER __u.__vi[1] & 0x7fffffff
+
+/* These macros provides macros for accessing inner
+ * attributes of the pthread_mutex_t struct.
+ * It is intened for solving the compiling failure
+ * of Dopra codes which claims that .__data.* realm
+ * can not be found in pthread_mutex_t. */
+#define MUTEX_TYPE __u.__i[0]
+#define MUTEX_LOCK __u.__vi[1]
+#define MUTEX_WAITERS __u.__vi[2]
+#define MUTEX_PREV __u.__p[3]
+#define MUTEX_NEXT __u.__p[4]
+#define MUTEX_COUNT __u.__i[5]
+
 #define __NEED_time_t
 #define __NEED_clockid_t
 #define __NEED_struct_timespec

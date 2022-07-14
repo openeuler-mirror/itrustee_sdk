@@ -8,6 +8,7 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
+ * Description: TEE client API definitions
  */
 
 #ifndef _TEE_CLIENT_API_H_
@@ -24,7 +25,7 @@
 
 #include <string.h>
 #include "tee_client_type.h"
-#include <tee_client_log.h>
+#include "tee_client_log.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -44,7 +45,7 @@ extern "C" {
  *  initializes a new TEE Context, forming a connection between this Client Application and the TEE
  *
  * @param name [IN] TEE name (unused)
- * @param context [IN/OUT] pointer to TEEC_Context to be initialized
+ * @param context [OUT] pointer to TEEC_Context to be initialized
  *
  * @return TEEC_SUCCESS operation success
  * @return TEEC_ERROR_BAD_PARAMETERS invalid parameter
@@ -74,11 +75,11 @@ void TEEC_FinalizeContext(
  * @param connectionData [IN] any necessary data required to support the connection method
  * @param operation [IN/OUT] a pointer to an Operation containing a set of Parameters to exchange with the
  * Trusted Application
- * @param returnOrigin [IN/OUT]  a pointer to a variable which will contain the return origin, This field may be NULL
+ * @param returnOrigin [OUT]  a pointer to a variable which will contain the return origin, This field may be NULL
  * if the return origin is not needed
  *
  * @return TEEC_SUCCESS operation success
- * @return TEEC_ERROR_BAD_PARAMETERS invalid parameter£¬context or session or destination is NULL
+ * @return TEEC_ERROR_BAD_PARAMETERS invalid parameter, context or session or destination is NULL
  * @return TEEC_ERROR_ACCESS_DENIED client Application's connection request is denied
  * @return TEEC_ERROR_OUT_OF_MEMORY system resource is out of use
  * @return TEEC_ERROR_TRUSTED_APP_LOAD_ERROR load Trusted Application failed
@@ -109,10 +110,10 @@ void TEEC_CloseSession(
  * @param session [IN/OUT] the open Session in which the command will be invoked
  * @param commandID [IN] the identifier of the Command within the Trusted Application to invoke
  * @param operation [IN/OUT] a pointer to a Client Application initialized TEEC_Operation structure
- * @param returnOrigin [IN/OUT] a pointer to a variable which will contain the return origin
+ * @param returnOrigin [OUT] a pointer to a variable which will contain the return origin
  *
  * @return TEEC_SUCCESS operation success
- * @return TEEC_ERROR_BAD_PARAMETERS invalid parameter£¬session is NULL or operation data invalid
+ * @return TEEC_ERROR_BAD_PARAMETERS invalid parameter, session is NULL or operation data invalid
  * @return TEEC_ERROR_ACCESS_DENIED invoke command operation is denied
  * @return TEEC_ERROR_OUT_OF_MEMORY system resource is out of use
  * @return others refer TEEC_ReturnCode
@@ -155,8 +156,8 @@ TEEC_Result TEEC_AllocateSharedMemory(
 
 /*
  * deregisters or deallocates a previously initialized block of Shared Memory
- * if memory is allocated by ¹ýTEEC_AllocateSharedMemory, system will free this memory
- * if memory is registered by ¹ýTEEC_RegisterSharedMemory, system will not free this memory
+ * if memory is allocated by TEEC_AllocateSharedMemory, system will free this memory
+ * if memory is registered by TEEC_RegisterSharedMemory, system will not free this memory
  *
  * @param sharedMem [IN/OUT] a pointer to a valid Shared Memory structure
  *

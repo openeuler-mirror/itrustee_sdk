@@ -8,6 +8,7 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
+ * Description: Reference of TEE object api definitions
  */
 
 #ifndef __TEE_OBJECT_API_H
@@ -237,7 +238,7 @@ TEE_Result TEE_GenerateKey(TEE_ObjectHandle object, uint32_t keySize, TEE_Attrib
  */
 TEE_Result TEE_InfoObjectData(TEE_ObjectHandle object, uint32_t *pos, uint32_t *len);
 
-#if (API_LEVEL >= 2)
+#if defined(API_LEVEL) && (API_LEVEL >= 2)
 
 /*
  * Obtain the TEE_ObjectInfo of the object and copy it to the space pointed
