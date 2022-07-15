@@ -8,6 +8,7 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
+ * Description: Header file of memory management api
  */
 
 #ifndef TEE_MEM_MGMT_API_H
@@ -61,7 +62,7 @@ enum MALLOC_HINT {
  *
  * @return void
  */
-#if (API_LEVEL >= API_LEVEL1_2)
+#if defined(API_LEVEL) && (API_LEVEL >= API_LEVEL1_2)
 void TEE_MemFill(void *buffer, uint8_t x, size_t size);
 #else
 void TEE_MemFill(void *buffer, uint32_t x, size_t size);

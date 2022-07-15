@@ -8,40 +8,13 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
+ * Description: Reference of TEE time api definitions
  */
 
 #ifndef __TEE_TIME_API_H
 #define __TEE_TIME_API_H
 
 #include "tee_defines.h"
-
-#define TEE_TIMEOUT_INFINITE (0xFFFFFFFF)
-
-typedef struct {
-    uint32_t seconds;
-    uint32_t millis;
-} TEE_Time;
-
-typedef struct {
-    int32_t seconds;
-    int32_t millis;
-    int32_t min;
-    int32_t hour;
-    int32_t day;
-    int32_t month;
-    int32_t year;
-} TEE_Date_Time;
-
-typedef struct {
-    uint32_t type;
-    uint32_t timer_id;
-    uint32_t timer_class;
-    uint32_t reserved2;
-} TEE_timer_property;
-
-typedef enum {
-    ANTI_ROOT_TIMER = 1,
-} TEE_Anti_Root_Timer_Type;
 
 /*
  * Get current TEE system rtc time
@@ -111,54 +84,4 @@ void TEE_GetREETime(TEE_Time *time);
  * @return void
  */
 void TEE_GetREETimeStr(char *time_str, uint32_t time_str_len);
-
-/*
- * Create rtc timer event
- *
- * @param time_seconds   [IN] specified number of seconds
- * @param timer_property [IN] specified property of timer
- *
- * @return  TEE_SUCCESS success
- * @return  TEE_ERROR_GENERIC create timer fail
- */
-TEE_Result TEE_EXT_CreateTimer(uint32_t time_seconds, TEE_timer_property *timer_property);
-
-/*
- * Destory rtc timer event
- *
- * @param timer_property [IN] specified property of timer
- *
- * @return  TEE_SUCCESS success
- * @return  TEE_ERROR_GENERIC destroy timer fail
- */
-TEE_Result TEE_EXT_DestoryTimer(TEE_timer_property *timer_property);
-
-/*
- * Get expire time of rtc timer event
- *
- * @param timer_property [IN] specified property of timer
- * @param time_seconds   [OUT] expire time of rtc timer event
- *
- * @return  TEE_SUCCESS success
- * @return  TEE_ERROR_GENERIC get expire time fail
- */
-TEE_Result TEE_EXT_GetTimerExpire(TEE_timer_property *timer_property, uint32_t *time_seconds);
-
-/*
- * Get remain time of rtc timer event
- *
- * @param timer_property [IN] specified property of timer
- * @param time_seconds   [OUT] remain time of rtc timer event
- *
- * @return  TEE_SUCCESS success
- * @return  TEE_ERROR_GENERIC get remain time fail
- */
-TEE_Result TEE_EXT_GetTimerRemain(TEE_timer_property *timer_property, uint32_t *time_seconds);
-
-/*
- * Get secure rtc time
- *
- * @return current rtc seconds
- */
-unsigned int __get_secure_rtc_time(void);
 #endif

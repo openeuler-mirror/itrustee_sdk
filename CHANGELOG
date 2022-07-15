@@ -1,4 +1,14 @@
-v0.1.0 (Apr 2, 2020)
+v5.1.2 (Jun 21, 2021)
+======
+Features:
+---------
+* add support for cmake
+v5.1.1 (May 21, 2021)
+======
+Fixes:
+------
+* The problem of storing the aeskey file is rectified, and the dependency on the pycryptodomex-3.10.1 plug-in package is introduced.
+v5.1.0 (Apr 2, 2020)
 ======
 Features:
 ---------

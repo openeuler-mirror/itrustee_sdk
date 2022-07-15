@@ -8,6 +8,7 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
+ * Description: Reference of TEE internal api and internal definitions
  */
 
 #ifndef __TEE_DEFINES_H
@@ -16,6 +17,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <tee_uuid.h>
 
 #ifndef TA_EXPORT
 #define TA_EXPORT
@@ -28,17 +30,8 @@ typedef int *tee_mutex_handle;
 #define API_LEVEL1_2   3
 
 #define TEE_PARAMS_NUM 4
-#undef true
-#define true 1
 
-#undef false
-#define false 0
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-#define PARAM_NOT_USED(val) ((void)val)
+#define PARAM_NOT_USED(val) ((void)(val))
 
 typedef union {
     struct {
@@ -84,6 +77,10 @@ enum TEE_ParamType {
     TEE_PARAM_TYPE_MEMREF_INOUT     = 0x7,
     TEE_PARAM_TYPE_ION_INPUT        = 0x8,
     TEE_PARAM_TYPE_ION_SGLIST_INPUT = 0x9,
+    TEE_PARAM_TYPE_MEMREF_SHARED_INOUT = 0xa,
+    TEE_PARAM_TYPE_RESMEM_INPUT        = 0xc,
+    TEE_PARAM_TYPE_RESMEM_OUTPUT       = 0xd,
+    TEE_PARAM_TYPE_RESMEM_INOUT        = 0xe,
 };
 
 #define S_VAR_NOT_USED(variable) \
@@ -149,6 +146,9 @@ enum TEE_ObjectAttribute {
     TEE_ATTR_ED25519_PH            = 0xF0000543,
     TEE_ATTR_X25519_PUBLIC_VALUE   = 0xD0000944,
     TEE_ATTR_X25519_PRIVATE_VALUE  = 0xC0000A44,
+    TEE_ATTR_PBKDF2_HMAC_PASSWORD  = 0xD0000133,
+    TEE_ATTR_PBKDF2_HMAC_SALT      = 0xD0000134,
+    TEE_ATTR_PBKDF2_HMAC_DIGEST    = 0xF0000135,
 };
 
 enum TEE_ObjectType {
@@ -185,6 +185,8 @@ enum TEE_ObjectType {
     TEE_TYPE_SM2_PKE_KEYPAIR    = 0xA1000047,
     TEE_TYPE_HMAC_SM3           = 0xA0000007,
     TEE_TYPE_SM4                = 0xA0000014,
+    TEE_TYPE_SIP_HASH           = 0xF0000002,
+    TEE_TYPE_PBKDF2_HMAC        = 0xF0000004,
 
     TEE_TYPE_CORRUPTED_OBJECT = 0xA00000BE,
 };
@@ -205,130 +207,115 @@ struct __TEE_ObjectHandle {
 };
 typedef struct __TEE_ObjectHandle *TEE_ObjectHandle;
 
-#define NODE_LEN 8
-typedef struct tee_uuid {
-    uint32_t timeLow;
-    uint16_t timeMid;
-    uint16_t timeHiAndVersion;
-    uint8_t clockSeqAndNode[NODE_LEN];
-} TEE_UUID;
-
-typedef struct spawn_uuid {
-    uint64_t uuid_valid;
-    TEE_UUID uuid;
-} spawn_uuid_t;
-
 enum TEE_Result_Value {
-    TEE_SUCCESS = 0x0,                /* success */
-    TEE_ERROR_INVALID_CMD,            /* command is invalid */
-    TEE_ERROR_SERVICE_NOT_EXIST,      /* service is not exist */
-    TEE_ERROR_SESSION_NOT_EXIST,      /* session is not exist */
-    TEE_ERROR_SESSION_MAXIMUM,        /* exceeds max session count */
-    TEE_ERROR_REGISTER_EXIST_SERVICE, /* service already registered */
-    TEE_ERROR_TARGET_DEAD_FATAL,      /* internal error occurs */
-    TEE_ERROR_READ_DATA,              /* read data failed */
-    TEE_ERROR_WRITE_DATA,             /* write data failed */
-    TEE_ERROR_TRUNCATE_OBJECT,        /* truncate data failed */
-    TEE_ERROR_SEEK_DATA,              /* seek data failed */
-    TEE_ERROR_SYNC_DATA,              /* sync data failed */
-    TEE_ERROR_RENAME_OBJECT,          /* rename file failed */
-    TEE_ERROR_TRUSTED_APP_LOAD_ERROR, /* error occurs when loading TA */
-    TEE_ERROR_OTRP_LOAD_NOT_MATCHED = 0x80000100, /* TA type is inconsistent with the loading mode. */
-    TEE_ERROR_OTRP_LOAD_EXCEED   = 0x80000101, /* the not open session's otrp service num exceeds */
-    TEE_ERROR_OTRP_ACCESS_DENIED = 0x80000102, /* uuid of load cmd is not inconsistent with the sec file */
-    TEE_ERROR_OTRP_SERVICE_AGED  = 0x80000103, /* otrp service is aged */
-    TEE_ERROR_STORAGE_EIO        = 0x80001001, /* I/O error occurs in storage operation */
-    TEE_ERROR_STORAGE_EAGAIN     = 0x80001002, /* storage section is unavailable */
-    TEE_ERROR_STORAGE_ENOTDIR    = 0x80001003, /* operation target is not directory */
-    TEE_ERROR_STORAGE_EISDIR     = 0x80001004, /* cannot do this operation on directory */
-    TEE_ERROR_STORAGE_ENFILE     = 0x80001005, /* opened files exceed max count in system */
-    TEE_ERROR_STORAGE_EMFILE     = 0x80001006, /* opened files exceed max count for this process */
-    TEE_ERROR_STORAGE_EROFS      = 0x80001007, /* stroage section is read only */
-    TEE_ERROR_STORAGE_INSE_NOTSUPPORT  = 0x80001008, /* SFS inse mode is not supported */
-    TEE_ERROR_STORAGE_INSE_ERROR       = 0x80001009, /* SFS inse encrypto/decrypto error occurs */
-    TEE_ERROR_STORAGE_PATH_WRONG       = 0x8000100A, /* File path error */
-    TEE_ERROR_MSG_QUEUE_OVERFLOW       = 0x8000100B, /* sevice msg queue overflow */
-    TEE_ERROR_CORRUPT_OBJECT           = 0xF0100001, /* file object has been damaged */
-    TEE_ERROR_STORAGE_NOT_AVAILABLE    = 0xF0100003, /* storage section is unavailable */
-    TEE_ERROR_CIPHERTEXT_INVALID       = 0xF0100006, /* cipher text is incorrect */
-    TEE_ISOCKET_ERROR_PROTOCOL         = 0xF1007001, /* protocol error in socket connection */
-    TEE_ISOCKET_ERROR_REMOTE_CLOSED    = 0xF1007002, /* socket is closed by remote */
-    TEE_ISOCKET_ERROR_TIMEOUT          = 0xF1007003, /* socket connection is timeout */
-    TEE_ISOCKET_ERROR_OUT_OF_RESOURCES = 0xF1007004, /* no resource avaliable for socket connection */
-    TEE_ISOCKET_ERROR_LARGE_BUFFER     = 0xF1007005, /* buffer is too large in socket connection */
-    TEE_ISOCKET_WARNING_PROTOCOL       = 0xF1007006, /* warnning occurs in socket connection */
-    TEE_ERROR_GENERIC                  = 0xFFFF0000, /* generic error  */
-    TEE_ERROR_ACCESS_DENIED            = 0xFFFF0001, /* access is denied  */
-    TEE_ERROR_CANCEL                   = 0xFFFF0002, /* operation has been canceled */
-    TEE_ERROR_ACCESS_CONFLICT          = 0xFFFF0003, /* conflict access error occurs */
-    TEE_ERROR_EXCESS_DATA              = 0xFFFF0004, /* exceeds max data size */
-    TEE_ERROR_BAD_FORMAT               = 0xFFFF0005, /* incorrect data format */
-    TEE_ERROR_BAD_PARAMETERS           = 0xFFFF0006, /* incorrect parameters */
-    TEE_ERROR_BAD_STATE                = 0xFFFF0007, /* operation is not allowed in current state */
-    TEE_ERROR_ITEM_NOT_FOUND           = 0xFFFF0008, /* cannot find target item */
-    TEE_ERROR_NOT_IMPLEMENTED          = 0xFFFF0009, /* api is not implemented */
-    TEE_ERROR_NOT_SUPPORTED            = 0xFFFF000A, /* api is not supported */
-    TEE_ERROR_NO_DATA                  = 0xFFFF000B, /* no data avaliable for this operation */
-    TEE_ERROR_OUT_OF_MEMORY            = 0xFFFF000C, /* not memory avaliable for this operation */
-    TEE_ERROR_BUSY                     = 0xFFFF000D, /* system busy to handle this operation */
-    TEE_ERROR_COMMUNICATION            = 0xFFFF000E, /* communication error with target */
-    TEE_ERROR_SECURITY                 = 0xFFFF000F, /* security error occurs */
-    TEE_ERROR_SHORT_BUFFER             = 0xFFFF0010, /* buffer is too short for this operation */
-    TEE_ERROR_EXTERNAL_CANCEL          = 0xFFFF0011, /* operation is canceled */
-    TEE_PENDING                        = 0xFFFF2000, /* service is in pending state(in asynchronous state) */
-    TEE_PENDING2                       = 0xFFFF2001, /* service is in pending state() */
-    TEE_PENDING3                       = 0xFFFF2002, /* reserved error definition */
-    TEE_ERROR_TIMEOUT                  = 0xFFFF3001, /* operation is timeout */
-    TEE_ERROR_OVERFLOW                 = 0xFFFF300f, /* operation overflow */
-    TEE_ERROR_TARGET_DEAD              = 0xFFFF3024, /* TA is crashed */
-    TEE_ERROR_STORAGE_NO_SPACE         = 0xFFFF3041, /* no enough space to store data */
-    TEE_ERROR_MAC_INVALID              = 0xFFFF3071, /* MAC operation failed */
-    TEE_ERROR_SIGNATURE_INVALID        = 0xFFFF3072, /* signature check failed */
-    TEE_CLIENT_INTR                    = 0xFFFF4000, /* Interrupted by CFC. Broken control flow is detected. */
-    TEE_ERROR_TIME_NOT_SET             = 0xFFFF5000, /* time is not set */
-    TEE_ERROR_TIME_NEEDS_RESET         = 0xFFFF5001, /* time need to be reset */
-    TEE_FAIL                           = 0xFFFF5002, /* system error */
-    TEE_ERROR_TIMER                    = 0xFFFF6000, /* base value of timer error codes */
-    TEE_ERROR_TIMER_CREATE_FAILED,                   /* failed to create timer */
-    TEE_ERROR_TIMER_DESTORY_FAILED,                  /* failed to destory timer */
-    TEE_ERROR_TIMER_NOT_FOUND,                       /* timer not found */
-    TEE_ERROR_RPMB_BASE    = 0xFFFF7000,               /* base value of RPMB error codes */
-    TEE_ERROR_RPMB_GENERIC = 0xFFFF7001,               /* generic error of RPMB operations */
-    TEE_ERROR_RPMB_MAC_FAIL,                           /* verify MAC failed in RPMB operations */
-    TEE_ERROR_RPMB_COUNTER_FAIL,                       /* invalid counter in RPMB operations */
-    TEE_ERROR_RPMB_ADDR_FAIL,                          /* addresss check failed in RPMB operations */
-    TEE_ERROR_RPMB_WRITE_FAIL,                         /* failed to write data to RPMB */
-    TEE_ERROR_RPMB_READ_FAIL,                          /* failed to read data in RPMB */
-    TEE_ERROR_RPMB_KEY_NOT_PROGRAM,                    /* key is not provisioned in RPMB */
-    TEE_ERROR_RPMB_RESP_UNEXPECT_MSGTYPE = 0xFFFF7100, /* incorrect message type in RPMB response */
-    TEE_ERROR_RPMB_RESP_UNEXPECT_BLKCNT,               /* incorrect message data block count in RPMB response */
-    TEE_ERROR_RPMB_RESP_UNEXPECT_BLKIDX,               /* incorrect message data block index in RPMB response */
-    TEE_ERROR_RPMB_RESP_UNEXPECT_WRCNT,                /* incorrect message data counter in RPMB response */
-    TEE_ERROR_RPMB_RESP_UNEXPECT_NONCE,                /* incorrect message data nonce in RPMB response */
-    TEE_ERROR_RPMB_RESP_UNEXPECT_MAC,                  /* incorrect message data MAC in RPMB response */
-    TEE_ERROR_RPMB_FILE_NOT_FOUND,                     /* file not found in RPMB */
-    TEE_ERROR_RPMB_NOSPC,                              /* not space left for RPMB operations */
-    TEE_ERROR_RPMB_SPC_CONFLICT,                       /* exceeds max space of RPMB for this TA */
-    TEE_ERROR_RPMB_NOT_AVAILABLE,                      /* RPMB service not ready */
-    TEE_ERROR_RPMB_DAMAGED,                            /* RPMB partition is damaged */
-    TEE_ERROR_TUI_IN_USE = 0xFFFF7110,
-    TEE_ERROR_TUI_SWITCH_CHANNAL,
-    TEE_ERROR_TUI_CFG_DRIVER,
-    TEE_ERROR_TUI_INVALID_EVENT,
-    TEE_ERROR_TUI_POLL_EVENT,
-    TEE_ERROR_TUI_CANCELED,
-    TEE_ERROR_TUI_EXIT,
-    TEE_ERROR_TUI_NOT_AVAILABLE,
-    TEE_ERROR_SEC_FLASH_NOT_AVAILABLE,
-    TEE_ERROR_SESRV_NOT_AVAILABLE,
-    TEE_ERROR_BIOSRV_NOT_AVAILABLE,
-    TEE_ERROR_ROTSRV_NOT_AVAILABLE,
-    TEE_ERROR_ARTSRV_NOT_AVAILABLE,
-    TEE_ERROR_HSMSRV_NOT_AVAILABLE,
-    TEE_ERROR_ANTIROOT_RSP_FAIL     = 0xFFFF9110,
-    TEE_ERROR_ANTIROOT_INVOKE_ERROR = 0xFFFF9111,
-    TEE_ERROR_AUDIT_FAIL            = 0xFFFF9112,
-    TEE_FAIL2
+    TEE_SUCCESS                             = 0x00000000, /* success                                                */
+    TEE_ERROR_INVALID_CMD                   = 0x00000001, /* command is invalid                                     */
+    TEE_ERROR_SERVICE_NOT_EXIST             = 0x00000002, /* service is not exist                                   */
+    TEE_ERROR_SESSION_NOT_EXIST             = 0x00000003, /* session is not exist                                   */
+    TEE_ERROR_SESSION_MAXIMUM               = 0x00000004, /* exceeds max session count                              */
+    TEE_ERROR_REGISTER_EXIST_SERVICE        = 0x00000005, /* service already registered                             */
+    TEE_ERROR_TARGET_DEAD_FATAL             = 0x00000006, /* internal error occurs                                  */
+    TEE_ERROR_READ_DATA                     = 0x00000007, /* read data failed                                       */
+    TEE_ERROR_WRITE_DATA                    = 0x00000008, /* write data failed                                      */
+    TEE_ERROR_TRUNCATE_OBJECT               = 0x00000009, /* truncate data failed                                   */
+    TEE_ERROR_SEEK_DATA                     = 0x0000000A, /* seek data failed                                       */
+    TEE_ERROR_SYNC_DATA                     = 0x0000000B, /* sync data failed                                       */
+    TEE_ERROR_RENAME_OBJECT                 = 0x0000000C, /* rename file failed                                     */
+    TEE_ERROR_TRUSTED_APP_LOAD_ERROR        = 0x0000000D, /* error occurs when loading TA                           */
+    TEE_ERROR_OTRP_LOAD_NOT_MATCHED         = 0x80000100, /* TA type is inconsistent with the loading mode.         */
+    TEE_ERROR_OTRP_LOAD_EXCEED              = 0x80000101, /* the not open session's otrp service num exceeds        */
+    TEE_ERROR_OTRP_ACCESS_DENIED            = 0x80000102, /* uuid of load cmd is not inconsistent with the sec file */
+    TEE_ERROR_OTRP_SERVICE_AGED             = 0x80000103, /* otrp service is aged                                   */
+    TEE_ERROR_STORAGE_EIO                   = 0x80001001, /* I/O error occurs in storage operation                  */
+    TEE_ERROR_STORAGE_EAGAIN                = 0x80001002, /* storage section is unavailable                         */
+    TEE_ERROR_STORAGE_ENOTDIR               = 0x80001003, /* operation target is not directory                      */
+    TEE_ERROR_STORAGE_EISDIR                = 0x80001004, /* cannot do this operation on directory                  */
+    TEE_ERROR_STORAGE_ENFILE                = 0x80001005, /* opened files exceed max count in system                */
+    TEE_ERROR_STORAGE_EMFILE                = 0x80001006, /* opened files exceed max count for this process         */
+    TEE_ERROR_STORAGE_EROFS                 = 0x80001007, /* stroage section is read only                           */
+    TEE_ERROR_STORAGE_PATH_WRONG            = 0x8000100A, /* File path error                                        */
+    TEE_ERROR_MSG_QUEUE_OVERFLOW            = 0x8000100B, /* sevice msg queue overflow                              */
+    TEE_ERROR_CORRUPT_OBJECT                = 0xF0100001, /* file object has been damaged                           */
+    TEE_ERROR_STORAGE_NOT_AVAILABLE         = 0xF0100003, /* storage section is unavailable                         */
+    TEE_ERROR_CIPHERTEXT_INVALID            = 0xF0100006, /* cipher text is incorrect                               */
+    TEE_ISOCKET_ERROR_PROTOCOL              = 0xF1007001, /* protocol error in socket connection                    */
+    TEE_ISOCKET_ERROR_REMOTE_CLOSED         = 0xF1007002, /* socket is closed by remote                             */
+    TEE_ISOCKET_ERROR_TIMEOUT               = 0xF1007003, /* socket connection is timeout                           */
+    TEE_ISOCKET_ERROR_OUT_OF_RESOURCES      = 0xF1007004, /* no resource avaliable for socket connection            */
+    TEE_ISOCKET_ERROR_LARGE_BUFFER          = 0xF1007005, /* buffer is too large in socket connection               */
+    TEE_ISOCKET_WARNING_PROTOCOL            = 0xF1007006, /* warnning occurs in socket connection                   */
+    TEE_ERROR_GENERIC                       = 0xFFFF0000, /* generic error                                          */
+    TEE_ERROR_ACCESS_DENIED                 = 0xFFFF0001, /* access is denied                                       */
+    TEE_ERROR_CANCEL                        = 0xFFFF0002, /* operation has been canceled                            */
+    TEE_ERROR_ACCESS_CONFLICT               = 0xFFFF0003, /* conflict access error occurs                           */
+    TEE_ERROR_EXCESS_DATA                   = 0xFFFF0004, /* exceeds max data size                                  */
+    TEE_ERROR_BAD_FORMAT                    = 0xFFFF0005, /* incorrect data format                                  */
+    TEE_ERROR_BAD_PARAMETERS                = 0xFFFF0006, /* incorrect parameters                                   */
+    TEE_ERROR_BAD_STATE                     = 0xFFFF0007, /* operation is not allowed in current state              */
+    TEE_ERROR_ITEM_NOT_FOUND                = 0xFFFF0008, /* cannot find target item                                */
+    TEE_ERROR_NOT_IMPLEMENTED               = 0xFFFF0009, /* api is not implemented                                 */
+    TEE_ERROR_NOT_SUPPORTED                 = 0xFFFF000A, /* api is not supported                                   */
+    TEE_ERROR_NO_DATA                       = 0xFFFF000B, /* no data avaliable for this operation                   */
+    TEE_ERROR_OUT_OF_MEMORY                 = 0xFFFF000C, /* not memory avaliable for this operation                */
+    TEE_ERROR_BUSY                          = 0xFFFF000D, /* system busy to handle this operation                   */
+    TEE_ERROR_COMMUNICATION                 = 0xFFFF000E, /* communication error with target                        */
+    TEE_ERROR_SECURITY                      = 0xFFFF000F, /* security error occurs                                  */
+    TEE_ERROR_SHORT_BUFFER                  = 0xFFFF0010, /* buffer is too short for this operation                 */
+    TEE_ERROR_EXTERNAL_CANCEL               = 0xFFFF0011, /* operation is canceled                                  */
+    TEE_PENDING                             = 0xFFFF2000, /* service is in pending state(in asynchronous state)     */
+    TEE_PENDING2                            = 0xFFFF2001, /* service is in pending state()                          */
+    TEE_PENDING3                            = 0xFFFF2002, /* reserved error definition                              */
+    TEE_ERROR_TIMEOUT                       = 0xFFFF3001, /* operation is timeout                                   */
+    TEE_ERROR_OVERFLOW                      = 0xFFFF300f, /* operation overflow                                     */
+    TEE_ERROR_TARGET_DEAD                   = 0xFFFF3024, /* TA is crashed                                          */
+    TEE_ERROR_STORAGE_NO_SPACE              = 0xFFFF3041, /* no enough space to store data                          */
+    TEE_ERROR_MAC_INVALID                   = 0xFFFF3071, /* MAC operation failed                                   */
+    TEE_ERROR_SIGNATURE_INVALID             = 0xFFFF3072, /* signature check failed                                 */
+    TEE_CLIENT_INTR                         = 0xFFFF4000, /* Interrupted by CFC. Broken control flow is detected.   */
+    TEE_ERROR_TIME_NOT_SET                  = 0xFFFF5000, /* time is not set                                        */
+    TEE_ERROR_TIME_NEEDS_RESET              = 0xFFFF5001, /* time need to be reset                                  */
+    TEE_FAIL                                = 0xFFFF5002, /* system error                                           */
+    TEE_ERROR_TIMER                         = 0xFFFF6000, /* base value of timer error codes                        */
+    TEE_ERROR_TIMER_CREATE_FAILED           = 0xFFFF6001, /* failed to create timer                                 */
+    TEE_ERROR_TIMER_DESTORY_FAILED          = 0xFFFF6002, /* failed to destory timer                                */
+    TEE_ERROR_TIMER_NOT_FOUND               = 0xFFFF6003, /* timer not found                                        */
+    TEE_ERROR_RPMB_BASE                     = 0xFFFF7000, /* base value of RPMB error codes                         */
+    TEE_ERROR_RPMB_GENERIC                  = 0xFFFF7001, /* generic error of RPMB operations                       */
+    TEE_ERROR_RPMB_MAC_FAIL                 = 0xFFFF7002, /* verify MAC failed in RPMB operations                   */
+    TEE_ERROR_RPMB_COUNTER_FAIL             = 0xFFFF7003, /* invalid counter in RPMB operations                     */
+    TEE_ERROR_RPMB_ADDR_FAIL                = 0xFFFF7004, /* addresss check failed in RPMB operations               */
+    TEE_ERROR_RPMB_WRITE_FAIL               = 0xFFFF7005, /* failed to write data to RPMB                           */
+    TEE_ERROR_RPMB_READ_FAIL                = 0xFFFF7006, /* failed to read data in RPMB                            */
+    TEE_ERROR_RPMB_KEY_NOT_PROGRAM          = 0xFFFF7007, /* key is not provisioned in RPMB                         */
+    TEE_ERROR_RPMB_RESP_UNEXPECT_MSGTYPE    = 0xFFFF7100, /* incorrect message type in RPMB response                */
+    TEE_ERROR_RPMB_RESP_UNEXPECT_BLKCNT     = 0xFFFF7101, /* incorrect message data block count in RPMB response    */
+    TEE_ERROR_RPMB_RESP_UNEXPECT_BLKIDX     = 0xFFFF7102, /* incorrect message data block index in RPMB response    */
+    TEE_ERROR_RPMB_RESP_UNEXPECT_WRCNT      = 0xFFFF7103, /* incorrect message data counter in RPMB response        */
+    TEE_ERROR_RPMB_RESP_UNEXPECT_NONCE      = 0xFFFF7104, /* incorrect message data nonce in RPMB response          */
+    TEE_ERROR_RPMB_RESP_UNEXPECT_MAC        = 0xFFFF7105, /* incorrect message data MAC in RPMB response            */
+    TEE_ERROR_RPMB_FILE_NOT_FOUND           = 0xFFFF7106, /* file not found in RPMB                                 */
+    TEE_ERROR_RPMB_NOSPC                    = 0xFFFF7107, /* not space left for RPMB operations                     */
+    TEE_ERROR_RPMB_SPC_CONFLICT             = 0xFFFF7108, /* exceeds max space of RPMB for this TA                  */
+    TEE_ERROR_RPMB_NOT_AVAILABLE            = 0xFFFF7109, /* RPMB service not ready                                 */
+    TEE_ERROR_RPMB_DAMAGED                  = 0xFFFF710A, /* RPMB partition is damaged                              */
+    TEE_ERROR_TUI_IN_USE                    = 0xFFFF7110, /* TUI is being used                                      */
+    TEE_ERROR_TUI_SWITCH_CHANNAL            = 0xFFFF7111, /* incorrect message switch channal in TUI response       */
+    TEE_ERROR_TUI_CFG_DRIVER                = 0xFFFF7112, /* incorrect message configurator driver in TUI response  */
+    TEE_ERROR_TUI_INVALID_EVENT             = 0xFFFF7113, /* invalid TUI event                                      */
+    TEE_ERROR_TUI_POLL_EVENT                = 0xFFFF7114, /* incorrect message polling events in TUI response       */
+    TEE_ERROR_TUI_CANCELED                  = 0xFFFF7115, /* TUI is cancelled                                       */
+    TEE_ERROR_TUI_EXIT                      = 0xFFFF7116, /* TUI is exited                                          */
+    TEE_ERROR_TUI_NOT_AVAILABLE             = 0xFFFF7117, /* TUI unavailable                                        */
+    TEE_ERROR_SEC_FLASH_NOT_AVAILABLE       = 0xFFFF7118, /* sec flash is not available                             */
+    TEE_ERROR_SESRV_NOT_AVAILABLE           = 0xFFFF7119, /* SE service has crashed or not enabled                  */
+    TEE_ERROR_BIOSRV_NOT_AVAILABLE          = 0xFFFF711A, /* BIO service is not available                           */
+    TEE_ERROR_ROTSRV_NOT_AVAILABLE          = 0xFFFF711B, /* ROT service is not available                           */
+    TEE_ERROR_ARTSRV_NOT_AVAILABLE          = 0xFFFF711C, /* ART service is not available                           */
+    TEE_ERROR_HSMSRV_NOT_AVAILABLE          = 0xFFFF711D, /* HSM service is not available                           */
+    TEE_ERROR_ANTIROOT_RSP_FAIL             = 0xFFFF9110, /* AntiRoot Response verify failed                        */
+    TEE_ERROR_ANTIROOT_INVOKE_ERROR         = 0xFFFF9111, /* AntiRoot ERROR during invokecmd                        */
+    TEE_ERROR_AUDIT_FAIL                    = 0xFFFF9112, /* audit failed                                           */
+    TEE_FAIL2                               = 0xFFFF9113  /* unused                                                 */
 };
 
 /*
@@ -342,6 +329,7 @@ enum TEE_LoginMethod {
     TEE_LOGIN_USER_APPLICATION = 0x5,
     TEE_LOGIN_GROUP_APPLICATION = 0x6,
     TEE_LOGIN_IDENTIFY = 0x7, /* iTrustee defined Lognin type */
+    TEEK_LOGIN_IDENTIFY = 0x80000001, /* iTrustee defined lognin type from linux kernel */
 };
 
 typedef struct {
@@ -363,5 +351,29 @@ typedef uint32_t TEE_TASessionHandle;
 typedef struct __TEE_ObjectHandle *TEE_ObjectHandle;
 typedef struct __TEE_ObjectEnumHandle *TEE_ObjectEnumHandle;
 typedef struct __TEE_OperationHandle *TEE_OperationHandle;
+
+#define TEE_TIMEOUT_INFINITE (0xFFFFFFFF)
+
+typedef struct {
+    uint32_t seconds;
+    uint32_t millis;
+} TEE_Time;
+
+typedef struct {
+    int32_t seconds;
+    int32_t millis;
+    int32_t min;
+    int32_t hour;
+    int32_t day;
+    int32_t month;
+    int32_t year;
+} TEE_Date_Time;
+
+typedef struct {
+    uint32_t type;
+    uint32_t timer_id;
+    uint32_t timer_class;
+    uint32_t reserved2;
+} TEE_timer_property;
 
 #endif

@@ -8,19 +8,20 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
+ * Description: TEE client log api
  */
 
 #ifndef TEE_CLIENT_LOG_H
 #define TEE_CLIENT_LOG_H
 
-#include <syslog.h>
+#include <stdio.h>
 
 #ifdef TEEC_DEBUG
-#define TEEC_Debug(...) syslog(LOG_USER | LOG_INFO, __VA_ARGS__);
+#define TEEC_Debug(fmt, args...) printf("%s: " fmt, __func__, ## args)
 #else
 #define TEEC_Debug(...)
 #endif
 
-#define TEEC_Error(...) syslog(LOG_USER | LOG_INFO, __VA_ARGS__);
+#define TEEC_Error(fmt, args...) printf("%s: " fmt, __func__, ## args)
 
 #endif

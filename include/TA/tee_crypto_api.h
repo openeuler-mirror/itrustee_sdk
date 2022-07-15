@@ -8,22 +8,22 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
+ * Description: tee crypto definitions
  */
 
 #ifndef TEE_CRYPTO_API_H
 #define TEE_CRYPTO_API_H
 
-#include "pthread.h" // pthread_mutex_t
-#include "tee_defines.h"
-#include "tee_mem_mgmt_api.h"
+#include <pthread.h> /* pthread_mutex_t */
+#include <tee_defines.h>
+#include <tee_mem_mgmt_api.h>
 
 #ifndef NULL
 #define NULL ((void *)0)
 #endif
 
-#define TEE_MAX_KEY_SIZE_IN_BITS (1024 * 8)
-
-#define SW_RSA_KEYLEN 1024
+#define TEE_MAX_KEY_SIZE_IN_BITS      (1024 * 8)
+#define SW_RSA_KEYLEN                 1024
 #define TEE_DH_MAX_SIZE_OF_OTHER_INFO 64 /* bytes */
 
 enum __TEE_Operation_Constants {
@@ -82,54 +82,58 @@ enum __tee_crypto_algorithm_id {
     TEE_ALG_RSAES_PKCS1_OAEP_MGF1_SHA384 = 0x60213230,
     TEE_ALG_RSAES_PKCS1_OAEP_MGF1_SHA512 = 0x60214230,
 #endif
-    TEE_ALG_RSA_NOPAD                 = 0x60000030,
-    TEE_ALG_DSA_SHA1                  = 0x70002131,
-    TEE_ALG_DSA_SHA224                = 0x70003131,
-    TEE_ALG_DSA_SHA256                = 0x70004131,
-    TEE_ALG_DH_DERIVE_SHARED_SECRET   = 0x80000032,
-    TEE_ALG_MD5                       = 0x50000001,
-    TEE_ALG_SHA1                      = 0x50000002,
-    TEE_ALG_SHA224                    = 0x50000003,
-    TEE_ALG_SHA256                    = 0x50000004,
-    TEE_ALG_SHA384                    = 0x50000005,
-    TEE_ALG_SHA512                    = 0x50000006,
-    TEE_ALG_HMAC_MD5                  = 0x30000001,
-    TEE_ALG_HMAC_SHA1                 = 0x30000002,
-    TEE_ALG_HMAC_SHA224               = 0x30000003,
-    TEE_ALG_HMAC_SHA256               = 0x30000004,
-    TEE_ALG_HMAC_SHA384               = 0x30000005,
-    TEE_ALG_HMAC_SHA512               = 0x30000006,
-    TEE_ALG_HMAC_SM3                  = 0x30000007,
-    TEE_ALG_AES_ECB_PKCS5             = 0x10000020,
-    TEE_ALG_AES_CBC_PKCS5             = 0x10000220,
-    TEE_ALG_ECDSA_SHA1                = 0x70001042,
-    TEE_ALG_ECDSA_SHA224              = 0x70002042,
-    TEE_ALG_ECDSA_SHA256              = 0x70003042,
-    TEE_ALG_ECDSA_SHA384              = 0x70004042,
-    TEE_ALG_ECDSA_SHA512              = 0x70005042,
-    TEE_ALG_ED25519                   = 0x70005043,
-    TEE_ALG_ECDH_DERIVE_SHARED_SECRET = 0x80000042,
-    TEE_ALG_X25519                    = 0x80000044,
-    TEE_ALG_ECC                       = 0x80000001,
-    TEE_ALG_ECDSA_P192                = 0x70001042,
-    TEE_ALG_ECDSA_P224                = 0x70002042,
-    TEE_ALG_ECDSA_P256                = 0x70003042,
-    TEE_ALG_ECDSA_P384                = 0x70004042,
-    TEE_ALG_ECDSA_P521                = 0x70005042,
-    TEE_ALG_ECDH_P192                 = 0x80001042,
-    TEE_ALG_ECDH_P224                 = 0x80002042,
-    TEE_ALG_ECDH_P256                 = 0x80003042,
-    TEE_ALG_ECDH_P384                 = 0x80004042,
-    TEE_ALG_ECDH_P521                 = 0x80005042,
-    TEE_ALG_SM2_DSA_SM3   = 0x70006045,
-    TEE_ALG_SM2_PKE       = 0x80000045,
-    TEE_ALG_SM3           = 0x50000007,
-    TEE_ALG_SM4_ECB_NOPAD = 0x10000014,
-    TEE_ALG_SM4_CBC_NOPAD = 0x10000114,
-    TEE_ALG_SM4_CTR       = 0x10000214,
-    TEE_ALG_SM4_XTS       = 0x10000414,
-    TEE_ALG_SM4_OFB       = 0x10000514,
-    TEE_ALG_AES_OFB       = 0x10000510,
+    TEE_ALG_RSA_NOPAD                    = 0x60000030,
+    TEE_ALG_DSA_SHA1                     = 0x70002131,
+    TEE_ALG_DSA_SHA224                   = 0x70003131,
+    TEE_ALG_DSA_SHA256                   = 0x70004131,
+    TEE_ALG_DH_DERIVE_SHARED_SECRET      = 0x80000032,
+    TEE_ALG_MD5                          = 0x50000001,
+    TEE_ALG_SHA1                         = 0x50000002,
+    TEE_ALG_SHA224                       = 0x50000003,
+    TEE_ALG_SHA256                       = 0x50000004,
+    TEE_ALG_SHA384                       = 0x50000005,
+    TEE_ALG_SHA512                       = 0x50000006,
+    TEE_ALG_HMAC_MD5                     = 0x30000001,
+    TEE_ALG_HMAC_SHA1                    = 0x30000002,
+    TEE_ALG_HMAC_SHA224                  = 0x30000003,
+    TEE_ALG_HMAC_SHA256                  = 0x30000004,
+    TEE_ALG_HMAC_SHA384                  = 0x30000005,
+    TEE_ALG_HMAC_SHA512                  = 0x30000006,
+    TEE_ALG_HMAC_SM3                     = 0x30000007,
+    TEE_ALG_AES_ECB_PKCS5                = 0x10000020,
+    TEE_ALG_AES_CBC_PKCS5                = 0x10000220,
+    TEE_ALG_ECDSA_SHA1                   = 0x70001042,
+    TEE_ALG_ECDSA_SHA224                 = 0x70002042,
+    TEE_ALG_ECDSA_SHA256                 = 0x70003042,
+    TEE_ALG_ECDSA_SHA384                 = 0x70004042,
+    TEE_ALG_ECDSA_SHA512                 = 0x70005042,
+    TEE_ALG_ED25519                      = 0x70005043,
+    TEE_ALG_ECDH_DERIVE_SHARED_SECRET    = 0x80000042,
+    TEE_ALG_X25519                       = 0x80000044,
+    TEE_ALG_ECC                          = 0x80000001,
+    TEE_ALG_ECDSA_P192                   = 0x70001042,
+    TEE_ALG_ECDSA_P224                   = 0x70002042,
+    TEE_ALG_ECDSA_P256                   = 0x70003042,
+    TEE_ALG_ECDSA_P384                   = 0x70004042,
+    TEE_ALG_ECDSA_P521                   = 0x70005042,
+    TEE_ALG_ECDH_P192                    = 0x80001042,
+    TEE_ALG_ECDH_P224                    = 0x80002042,
+    TEE_ALG_ECDH_P256                    = 0x80003042,
+    TEE_ALG_ECDH_P384                    = 0x80004042,
+    TEE_ALG_ECDH_P521                    = 0x80005042,
+    TEE_ALG_SIP_HASH                     = 0xF0000002,
+    TEE_ALG_SM2_DSA_SM3                  = 0x70006045,
+    TEE_ALG_SM2_PKE                      = 0x80000045,
+    TEE_ALG_SM3                          = 0x50000007,
+    TEE_ALG_SM4_ECB_NOPAD                = 0x10000014,
+    TEE_ALG_SM4_CBC_NOPAD                = 0x10000114,
+    TEE_ALG_SM4_CBC_PKCS7                = 0xF0000003,
+    TEE_ALG_SM4_CTR                      = 0x10000214,
+    TEE_ALG_SM4_CFB128                   = 0xF0000000,
+    TEE_ALG_SM4_XTS                      = 0x10000414,
+    TEE_ALG_SM4_OFB                      = 0x10000514,
+    TEE_ALG_AES_OFB                      = 0x10000510,
+    TEE_ALG_SM4_GCM                      = 0xF0000005,
 };
 
 typedef enum __tee_crypto_algorithm_id tee_crypto_algorithm_id;
@@ -162,13 +166,13 @@ typedef enum {
 } TEE_DH_OpMode_t;
 
 typedef enum {
-    TEE_DH_ASN1_DerivMode          = 0,                      /* *< ASN1_DerivMode */
-    TEE_DH_ConcatDerivMode         = 1,                      /* *< ConcatDerivMode */
-    TEE_DH_X963_DerivMode          = TEE_DH_ConcatDerivMode, /* *< X963_DerivMode */
-    TEE_DH_OMADRM_DerivMode        = 2,                      /* *< OMADRM_DerivMode */
-    TEE_DH_ISO18033_KDF1_DerivMode = 3,                      /* *< ISO18033_KDF1_DerivMode */
-    TEE_DH_ISO18033_KDF2_DerivMode = 4,                      /* *< ISO18033_KDF2_DerivMode */
-    TEE_DH_DerivFunc_NumOfModes,                             /* *< num of modes */
+    TEE_DH_ASN1_DerivMode          = 0,                      /* ASN1_DerivMode */
+    TEE_DH_ConcatDerivMode         = 1,                      /* ConcatDerivMode */
+    TEE_DH_X963_DerivMode          = TEE_DH_ConcatDerivMode, /* X963_DerivMode */
+    TEE_DH_OMADRM_DerivMode        = 2,                      /* OMADRM_DerivMode */
+    TEE_DH_ISO18033_KDF1_DerivMode = 3,                      /* ISO18033_KDF1_DerivMode */
+    TEE_DH_ISO18033_KDF2_DerivMode = 4,                      /* ISO18033_KDF2_DerivMode */
+    TEE_DH_DerivFunc_NumOfModes,                             /* num of modes */
 } TEE_DH_DerivFuncMode;
 
 enum __TEE_DK_ObjectAttribute {
@@ -242,9 +246,9 @@ typedef struct {
 } TEE_OperationInfoMultiple;
 
 struct __TEE_OperationHandle {
-    uint32_t algorithm;        /* *< #__TEE_CRYPTO_ALGORITHM_ID */
-    uint32_t operationClass;   /* *< #__TEE_Operation_Constants */
-    uint32_t mode;             /* *< #__TEE_OperationMode */
+    uint32_t algorithm;        /* #__TEE_CRYPTO_ALGORITHM_ID */
+    uint32_t operationClass;   /* #__TEE_Operation_Constants */
+    uint32_t mode;             /* #__TEE_OperationMode */
     uint32_t digestLength;
     uint32_t maxKeySize;
     uint32_t keySize;
@@ -261,12 +265,12 @@ struct __TEE_OperationHandle {
     void *privateKey;
     uint32_t privateKeyLen;
     uint32_t IVLen;
-    // start of DH
+    /* start of DH */
     TEE_DH_OtherInfo *dh_otherinfo; /* #TEE_DH_OtherInfo */
     uint32_t dh_hash_mode;          /* #TEE_DH_HASH_Mode */
     uint32_t dh_derive_func;        /* #TEE_DH_DerivFuncMode */
     uint32_t dh_op_mode;            /* #TEE_DH_OpMode_t */
-    // end of DH
+    /* end of DH */
     pthread_mutex_t operation_lock;
     void *hal_info;
 };
@@ -430,11 +434,11 @@ TEE_Result TEE_CipherDoFinal(TEE_OperationHandle operation, const void *srcData,
  */
 #ifndef GP_SUPPORT
 
-#if (API_LEVEL >= 2)
+#if defined(API_LEVEL) && (API_LEVEL >= 2)
 void TEE_DigestUpdate(TEE_OperationHandle operation, const void *chunk, size_t chunkSize);
 #else
 TEE_Result TEE_DigestUpdate(TEE_OperationHandle operation, const void *chunk, size_t chunkSize);
-#endif // API_LEVEL
+#endif /* API_LEVEL */
 
 #else
 void TEE_DigestUpdate(TEE_OperationHandle operation, const void *chunk, size_t chunkSize);
@@ -506,13 +510,13 @@ TEE_Result TEE_MACComputeFinal(TEE_OperationHandle operation, const void *messag
  */
 #ifndef GP_SUPPORT
 
-#if (API_LEVEL >= 2)
+#if defined(API_LEVEL) && (API_LEVEL >= 2)
 TEE_Result TEE_MACCompareFinal(TEE_OperationHandle operation, const void *message, size_t messageLen, const void *mac,
                                const size_t macLen);
 #else
 TEE_Result TEE_MACCompareFinal(TEE_OperationHandle operation, const void *message, size_t messageLen, const void *mac,
                                const size_t *macLen);
-#endif // API_LEVEL
+#endif /* API_LEVEL */
 
 #else
 TEE_Result TEE_MACCompareFinal(TEE_OperationHandle operation, const void *message, size_t messageLen, const void *mac,
@@ -687,7 +691,7 @@ TEE_Result TEE_AsymmetricSignDigest(TEE_OperationHandle operation, const TEE_Att
 TEE_Result TEE_AsymmetricVerifyDigest(TEE_OperationHandle operation, const TEE_Attribute *params, uint32_t paramCount,
                                       void *digest, size_t digestLen, void *signature, size_t signatureLen);
 
-#if (API_LEVEL >= 2)
+#if defined(API_LEVEL) && (API_LEVEL >= 2)
 
 /*
  * Get Operation Info multiple
@@ -702,9 +706,9 @@ TEE_Result TEE_AsymmetricVerifyDigest(TEE_OperationHandle operation, const TEE_A
  */
 TEE_Result TEE_GetOperationInfoMultiple(TEE_OperationHandle operation, TEE_OperationInfoMultiple *operationInfoMultiple,
                                         const size_t *operationSize);
-#endif // API_LEVEL
+#endif /* API_LEVEL */
 
-#if (API_LEVEL >= 3)
+#if defined(API_LEVEL) && (API_LEVEL >= 2)
 
 /*
  * check whether the algorithm is sopported
@@ -716,6 +720,8 @@ TEE_Result TEE_GetOperationInfoMultiple(TEE_OperationHandle operation, TEE_Opera
  * @return TEE_ERROR_NOT_SUPPORTED not support
  */
 TEE_Result TEE_IsAlgorithmSupported(uint32_t algId, uint32_t element);
-#endif // API_LEVEL
+
+TEE_Result TEE_IsHardWareSupportAlgorithm(uint32_t alg_type);
+#endif /* API_LEVEL */
 
 #endif

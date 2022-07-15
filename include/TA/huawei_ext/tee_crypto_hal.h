@@ -8,17 +8,18 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
+ * Description: crypto hal info function
  */
 
 #ifndef TEE_CRYPTO_HAL_H
 #define TEE_CRYPTO_HAL_H
 #include "tee_crypto_api.h"
 enum CRYPTO_ENGINE {
-    DX_CRYPTO,
-    EPS_CRYPTO,
-    SOFT_CRYPTO,
-    SEC_CRYPTO,
-    CRYPTO_ENGINE_MAX,
+    DX_CRYPTO = 0,
+    EPS_CRYPTO = 1,
+    SOFT_CRYPTO = 2,
+    SEC_CRYPTO = 3,
+    CRYPTO_ENGINE_MAX = 1024,
 };
 
 /*

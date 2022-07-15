@@ -8,16 +8,13 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
+ * Description: tee crypto definitions
  */
 
 #ifndef TEE_ARITH_API_H
 #define TEE_ARITH_API_H
 
-#include "tee_defines.h"
-
-#ifndef API_LEVEL
-#define API_LEVEL API_LEVEL1_0
-#endif
+#include <tee_defines.h>
 
 /*
  * below definitions are defined by Global Platform
@@ -69,7 +66,7 @@ void TEE_BigIntInit(TEE_BigInt *bigInt, size_t len);
  */
 void TEE_BigIntInitFMMContext(TEE_BigIntFMMContext *context, size_t len, const TEE_BigInt *modulus);
 
-#if (API_LEVEL >= API_LEVEL1_1_1)
+#if defined(API_LEVEL) && (API_LEVEL >= API_LEVEL1_1_1)
 
 /*
  * calculates the necessary prerequisites for the fast modular multiplication and stores them in a context.
@@ -82,7 +79,7 @@ void TEE_BigIntInitFMMContext(TEE_BigIntFMMContext *context, size_t len, const T
  * @return other failed
  */
 TEE_Result TEE_BigIntInitFMMContext1(TEE_BigIntFMMContext *context, size_t len, const TEE_BigInt *modulus);
-#endif // API_LEVEL
+#endif /* API_LEVEL */
 
 /*
  * initializes bigIntFMM and sets its represented value to zero.
@@ -194,7 +191,7 @@ bool TEE_BigIntGetBit(const TEE_BigInt *src, uint32_t bitIndex);
  */
 uint32_t TEE_BigIntGetBitCount(const TEE_BigInt *src);
 
-#if (API_LEVEL >= API_LEVEL1_2)
+#if defined(API_LEVEL) && (API_LEVEL >= API_LEVEL1_2)
 /*
  * sets the bitIndexth bit of the natural binary representation of |op| to 1 or 0
  *
@@ -228,7 +225,7 @@ TEE_Result TEE_BigIntAssign(TEE_BigInt *dest, const TEE_BigInt *src);
  * @return #TEE_ERROR_OVERFLOW In case the dest operand cannot hold the value of |src|
  */
 TEE_Result TEE_BigIntAbs(TEE_BigInt *dest, const TEE_BigInt *src);
-#endif // API_LEVEL
+#endif /* API_LEVEL */
 
 /*
  * computes dest = op1 + op2
@@ -441,7 +438,7 @@ void TEE_BigIntConvertFromFMM(TEE_BigInt *dest, const TEE_BigIntFMM *src, const 
 void TEE_BigIntComputeFMM(TEE_BigIntFMM *dest, const TEE_BigIntFMM *op1, const TEE_BigIntFMM *op2, const TEE_BigInt *n,
                           const TEE_BigIntFMMContext *context);
 
-#if (API_LEVEL >= API_LEVEL1_1_1)
+#if defined(API_LEVEL) && (API_LEVEL >= API_LEVEL1_1_1)
 /*
  * computes dest = (op1 ^ op2) (mod n).
  *
@@ -456,7 +453,7 @@ void TEE_BigIntComputeFMM(TEE_BigIntFMM *dest, const TEE_BigIntFMM *op1, const T
  */
 TEE_Result TEE_BigIntExpMod(TEE_BigInt *des, TEE_BigInt *op1, const TEE_BigInt *op2, const TEE_BigInt *n,
                             TEE_BigIntFMMContext *context);
-#endif // API_LEVEL
+#endif /* API_LEVEL */
 
 /*
  * check whether n exists to make dest = (op1 ^ op2) (mod n).

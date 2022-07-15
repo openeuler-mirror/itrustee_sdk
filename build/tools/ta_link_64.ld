@@ -8,6 +8,7 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
+ * Description: Describe the link file for 64bits TA
  */
 
 OUTPUT_FORMAT("elf64-littleaarch64", "elf64-bigaarch64",
@@ -19,6 +20,7 @@ SECTIONS
 {
   /* Read-only sections, merged into text segment: */
   . = SEGMENT_START("text-segment", 0) + SIZEOF_HEADERS;
+  _start = .;
   /* This should be the first section after program headers */
   .magic : { *(.magic) }
   .note.gnu.build-id : { *(.note.gnu.build-id) }
@@ -49,7 +51,14 @@ SECTIONS
       *(.rela.plt)
       *(.rela.iplt)
     }
-  .rodata         : { *(.rodata .rodata.* .gnu.linkonce.r.*) }
+  .rodata         :
+  {
+    *(.rodata .rodata.* .gnu.linkonce.r.*)
+    . = ALIGN(16);
+    PROVIDE (__start___llvm_prf_names = .);
+    *(__llvm_prf_names)
+    PROVIDE (__stop___llvm_prf_names = .);
+  }
   .rodata1        : { *(.rodata1) }
   .eh_frame_hdr : { *(.eh_frame_hdr) *(.eh_frame_entry .eh_frame_entry.*) }
   .eh_frame       : ONLY_IF_RO { KEEP (*(.eh_frame)) *(.eh_frame.*) }
@@ -150,6 +159,15 @@ SECTIONS
   {
     PROVIDE (__data_start = .);
     *(.data .data.* .gnu.linkonce.d.*)
+    PROVIDE (__start___llvm_prf_cnts = .);
+    *(__llvm_prf_cnts)
+    PROVIDE (__stop___llvm_prf_cnts = .);
+    PROVIDE (__start___llvm_prf_data = .);
+    *(__llvm_prf_data)
+    PROVIDE (__stop___llvm_prf_data = .);
+    PROVIDE (__start___llvm_prf_vnds = .);
+    *(__llvm_prf_vnds);
+    PROVIDE (__stop___llvm_prf_vnds = .);
     SORT(CONSTRUCTORS)
   }
   .data1          : { *(.data1) }

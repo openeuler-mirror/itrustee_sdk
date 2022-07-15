@@ -1,8 +1,8 @@
-include ../config.mk
-include ../../../../build/mk/cloud/common.mk
+# Copyright (c) Huawei Technologies Co., Ltd. 2018-2021. All rights reserved.
+include ./config.mk
+include ../../../build/mk/common.mk
 
 SRC += $(wildcard ./*.c)
-SRC += ../ta_demo.c
 
 # set header directory
 INCLUDEDIR += -I./include
@@ -12,12 +12,11 @@ COBJS := $(SRC:%.c=%.o)
 TARGET = $(COBJS)
 
 sec_binary:combine
-	cp ../config.mk ./
-	cp ../manifest.txt ./
-	python3 -B ${SIGNTOOL_DIR}/signtool_v3.py ${CUR_DIR} ${CUR_DIR} --config ${SIGNTOOL_DIR}/cloud/config_cloud.ini
+	python3 -B ${SIGNTOOL_DIR}/signtool_v3.py ${CUR_DIR} ${CUR_DIR} --privateCfg ${SIGNTOOL_DIR}/config_cloud.ini
 
 combine: $(TARGET)
 	$(LD) $(LDFLAGS) $(TARGET) $(EXTRAO) -o libcombine.so
+	objcopy libcombine.so
 
 src/%.o: ./src/%.c
 	$(CC) $(CFLAGS)  $(INCLUDEDIR) -c $< -o $@
@@ -26,4 +25,4 @@ src/%.o: ./src/%.c
 	$(CC) $(CFLAGS)  $(INCLUDEDIR) -c $< -o $@
 
 clean:
-	rm -f $(COBJS) *.so
+	rm -f $(COBJS) *.so *.sec

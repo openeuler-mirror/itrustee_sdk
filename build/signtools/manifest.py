@@ -11,15 +11,20 @@
 # KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
 # NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 # See the Mulan PSL v2 for more details.
+# Description: tools for generating a trusted application load image
 #----------------------------------------------------------------------------
 import string
 import struct
 import uuid
 import os
+import re
+import stat
 
-PRODUCT_TA_IMAGE        = 1
-PRODUCT_DYN_LIB         = 2
-PRODUCT_SERVICE_IMAGE   = 3
+PRODUCT_TA_IMAGE = 1
+PRODUCT_DYN_LIB = 2
+PRODUCT_SERVICE_IMAGE = 3
+PRODUCT_CLIENT_IMAGE = 4
+PRODUCT_DRIVER_IMAGE = 5
 
 
 class PackUuid:
@@ -27,12 +32,12 @@ class PackUuid:
     data = struct.Struct('IHH8b')
 
     def __init__(self, data):
-        unpacked_data       = (PackUuid.data).unpack(str.encode(data))
-        self.unpacked_data  = unpacked_data
-        self.time_low        = unpacked_data[0]
-        self.time_mid        = unpacked_data[1]
+        unpacked_data = (PackUuid.data).unpack(str.encode(data))
+        self.unpacked_data = unpacked_data
+        self.time_low = unpacked_data[0]
+        self.time_mid = unpacked_data[1]
         self.time_hi_version = unpacked_data[2]
-        self.clock_seq_node  = unpacked_data[3]
+        self.clock_seq_node = unpacked_data[3]
 
     def print_values(self):
         print("ATTRIBUTE / VALUE")
@@ -58,13 +63,13 @@ class Manifest:
     data = struct.Struct('I' * 6)
 
     def __init__(self, data):
-        unpacked_data       = (Manifest.data).unpack(str.encode(data))
-        self.unpacked_data  = unpacked_data
+        unpacked_data = (Manifest.data).unpack(str.encode(data))
+        self.unpacked_data = unpacked_data
         self.single_instance = unpacked_data[0]
-        self.multi_session  = unpacked_data[1]
-        self.multi_command  = unpacked_data[2]
-        self.heap_size      = unpacked_data[3]
-        self.stack_size     = unpacked_data[4]
+        self.multi_session = unpacked_data[1]
+        self.multi_command = unpacked_data[2]
+        self.heap_size = unpacked_data[3]
+        self.stack_size = unpacked_data[4]
         self.instancekeepalive = unpacked_data[5]
 
     def print_values(self):
@@ -127,7 +132,6 @@ def trailing_space_tabs(str_line):
     print('trailing space tabs in value head and trail')
     space_tabs = chr(9) + chr(32) + chr(160)
     space_tabs_newlines = space_tabs + chr(10) + chr(13)
-    print('tab: {}'.format(space_tabs))
 
     print('str in: {}'.format(str_line))
     index = 0
@@ -174,8 +178,12 @@ def parser_manifest(manifest, manifest_data_path, mani_ext):
     manifest_val.stack_size = 2048
 
     service_name = 'external_service'
+    dyn_conf_target_type = 0
 
-    with open(manifest, 'r') as mani_fp, open(mani_ext, 'wb') as mani_ext_fp:
+    with open(manifest, 'r') as mani_fp:
+        fd_ext = os.open(mani_ext, os.O_WRONLY | os.O_CREAT, \
+            stat.S_IWUSR | stat.S_IRUSR)
+        mani_ext_fp = os.fdopen(fd_ext, "wb")
         for each_line in mani_fp:
             print(each_line)
             if each_line.startswith("#") or not len(each_line.strip()):
@@ -194,10 +202,12 @@ def parser_manifest(manifest, manifest_data_path, mani_ext):
 
             if verify_property_name(prop_name) is False:
                 print('manifest format invalid, please check it')
+                mani_ext_fp.close()
                 return (False, 0)
 
             if verify_property_value(prop_value_v) is False:
                 print('manifest format invalid, please check it')
+                mani_ext_fp.close()
                 return (False, 0)
 
             # name:value to lowcase, and parse manifest
@@ -257,27 +267,60 @@ def parser_manifest(manifest, manifest_data_path, mani_ext):
                 service_name = prop_value_v
                 print('b')
 
+            elif 'gpd.ta.dynconf' == prop_name_low:
+                mani_ext_fp.close()
+                raise Exception("gpd.ta.dynConf is reserved, cannot set")
+
             else:
                 print('b')
                 #write have not paresed manifest into sample.manifest file
                 mani_ext_fp.write(str.encode(prop_name_t))
                 mani_ext_fp.write(str.encode(prop_value))
-                if 'gpd.ta.is_tee_service' == prop_name_low:
-                    prop_value_low = prop_value_v.lower()
-                    if 'true' == prop_value_low:
-                        target_type = PRODUCT_SERVICE_IMAGE
-                elif 'gpd.ta.is_lib' == prop_name_low:
+                if 'gpd.ta.is_lib' == prop_name_low:
                     prop_value_low = prop_value_v.lower()
                     if 'true' == prop_value_low:
                         target_type = PRODUCT_DYN_LIB
+                elif 'gpd.ta.target_type' == prop_name_low:
+                    dyn_conf_target_type = int(prop_value_v)
+                    if dyn_conf_target_type > 0xFFFF or \
+                        dyn_conf_target_type < 0:
+                        mani_ext_fp.close()
+                        raise RuntimeError("target_type " + \
+                                           str(dyn_conf_target_type) + \
+                                           " must in range [0, 0xFFFF]")
 
+        mani_ext_fp.close()
         #write the whole parsed manifest into sample.manifest file
 
     service_name_len = len(service_name)
     print('service name: {}'.format(service_name))
     print('service name len: {}'.format(service_name_len))
-    if service_name_len > 64:
-        print("service name len exceed MAX value 27")
+
+    max_service_len = 64
+
+    # dyn_conf_target_type is 1 means that is drv
+    if dyn_conf_target_type == 1:
+        max_service_len = 32
+        target_type = PRODUCT_DRIVER_IMAGE
+        if not re.match(r"^[A-Za-z0-9_]*$", service_name):
+            raise RuntimeError("drv's name only can use \
+                               [A-Z] [a-z] [0-9] and '_'")
+
+    if dyn_conf_target_type == 3:
+        max_service_len = 32
+        target_type = PRODUCT_SERVICE_IMAGE
+        if not re.match(r"^[A-Za-z0-9_]*$", service_name):
+            raise RuntimeError("drv's name only can use \
+                               [A-Z] [a-z] [0-9] and '_'")
+    if dyn_conf_target_type == 4:
+        max_service_len = 32
+        target_type = PRODUCT_CLIENT_IMAGE
+        if not re.match(r"^[A-Za-z0-9_]*$", service_name):
+            raise RuntimeError("drv's name only can use \
+                               [A-Z] [a-z] [0-9] and '_'")
+
+    if service_name_len > max_service_len:
+        print("service name len cannot larger than " + str(max_service_len))
         raise RuntimeError
 
     # get manifest string file len
@@ -296,24 +339,48 @@ def parser_manifest(manifest, manifest_data_path, mani_ext):
         print("manifest strint: {}".format(manifest_string_buf))
 
     #---- write manifest parse context to manifest file
-    with open(manifest_data_path, 'wb') as out_manifest_fp:
-        out_manifest_fp.write(uuid_val.bytes_le)
-        out_manifest_fp.write(str.encode(service_name))
-        out_manifest_fp.write(manifest_val.get_pack_data())
+    fd_out = os.open(manifest_data_path, os.O_WRONLY | os.O_CREAT, \
+        stat.S_IWUSR | stat.S_IRUSR)
+    out_manifest_fp = os.fdopen(fd_out, "wb")
+    out_manifest_fp.write(uuid_val.bytes_le)
+    out_manifest_fp.write(str.encode(service_name))
+    out_manifest_fp.write(manifest_val.get_pack_data())
+    out_manifest_fp.close()
 
+    uuid_str = str(uuid_val)
     product_name = str(uuid_val)
     if target_type == PRODUCT_TA_IMAGE:
         print("product type is ta image")
-        product_name = "".join([product_name,  ".sec"])
+        product_name = "".join([uuid_str, ".sec"])
+    elif target_type == PRODUCT_DRIVER_IMAGE:
+        print("product type is driver")
+        product_name = "".join([service_name, ".sec"])
     elif target_type == PRODUCT_SERVICE_IMAGE:
         print("product type is service")
-        product_name = "".join([product_name, service_name, "_svr.sec"])
+        product_name = "".join([service_name, ".sec"])
+    elif target_type == PRODUCT_CLIENT_IMAGE:
+        print("product type is client")
+        product_name = "".join([service_name, ".so.sec"])
     elif target_type == PRODUCT_DYN_LIB:
         print("product type is dyn lib")
-        product_name = "".join([product_name, service_name, ".so.sec"])
+        product_name = "".join([uuid_str, service_name, ".so.sec"])
     else:
         print("invalid product type!")
         raise RuntimeError
 
-    return (True, product_name)
+    return (True, product_name, uuid_str)
 
+
+def process_manifest_file(xml_config_path, manifest_path, \
+    manifest_data_path, mani_ext):
+
+    manifest_txt_exist = True
+    if not os.path.exists(manifest_path):
+        print("xml trans manifest cfg")
+        manifest_txt_exist = False
+        from xml_trans_manifest import trans_xml_to_manifest
+        trans_xml_to_manifest(xml_config_path, manifest_path)
+
+    ret, product_name, uuid_str = parser_manifest(manifest_path, \
+        manifest_data_path, mani_ext)
+    return (ret, product_name, uuid_str, manifest_txt_exist)

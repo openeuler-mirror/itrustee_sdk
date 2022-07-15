@@ -8,38 +8,39 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
+ * Description: static definitions of client API
  */
 
 #ifndef _TEE_CLIENT_CONSTANTS_H_
 #define _TEE_CLIENT_CONSTANTS_H_
 
 enum TEEC_ReturnCode {
-    TEEC_SUCCESS = 0x0,                   /* success */
-    TEEC_ERROR_INVALID_CMD,               /* invalid command */
-    TEEC_ERROR_SERVICE_NOT_EXIST,         /* target service is not exist */
-    TEEC_ERROR_SESSION_NOT_EXIST,         /* session between client and service is not exist */
-    TEEC_ERROR_SESSION_MAXIMUM,           /* exceed max num of sessions */
-    TEEC_ERROR_REGISTER_EXIST_SERVICE,    /* cannot register the service which already exist */
-    TEEC_ERROR_TAGET_DEAD_FATAL,          /* system error occurs in TEE */
-    TEEC_ERROR_READ_DATA,                 /* failed to read data in file */
-    TEEC_ERROR_WRITE_DATA,                /* failed to write data to file */
-    TEEC_ERROR_TRUNCATE_OBJECT,           /* data is truncated */
-    TEEC_ERROR_SEEK_DATA,                 /* failed to seek data in file */
-    TEEC_ERROR_FSYNC_DATA,                /* failed to sync data in file */
-    TEEC_ERROR_RENAME_OBJECT,             /* failed to rename file */
-    TEEC_ERROR_TRUSTED_APP_LOAD_ERROR,    /* failed to load Trusted Application */
-    TEEC_ERROR_GENERIC = 0xFFFF0000,      /* generic error occurs */
-    TEEC_ERROR_ACCESS_DENIED = 0xFFFF0001,  /* permission check failed, in initilize context or
-                                               open session or invoke commnad */
-    TEEC_ERROR_CANCEL = 0xFFFF0002, /* operation is already canceled */
+    TEEC_SUCCESS = 0x0,                      /* success */
+    TEEC_ERROR_INVALID_CMD,                  /* invalid command */
+    TEEC_ERROR_SERVICE_NOT_EXIST,            /* target service is not exist */
+    TEEC_ERROR_SESSION_NOT_EXIST,            /* session between client and service is not exist */
+    TEEC_ERROR_SESSION_MAXIMUM,              /* exceed max num of sessions */
+    TEEC_ERROR_REGISTER_EXIST_SERVICE,       /* cannot register the service which already exist */
+    TEEC_ERROR_TAGET_DEAD_FATAL,             /* system error occurs in TEE */
+    TEEC_ERROR_READ_DATA,                    /* failed to read data in file */
+    TEEC_ERROR_WRITE_DATA,                   /* failed to write data to file */
+    TEEC_ERROR_TRUNCATE_OBJECT,              /* data is truncated */
+    TEEC_ERROR_SEEK_DATA,                    /* failed to seek data in file */
+    TEEC_ERROR_FSYNC_DATA,                   /* failed to sync data in file */
+    TEEC_ERROR_RENAME_OBJECT,                /* failed to rename file */
+    TEEC_ERROR_TRUSTED_APP_LOAD_ERROR,       /* failed to load Trusted Application */
+    TEEC_ERROR_GENERIC = 0xFFFF0000,         /* generic error occurs */
+    TEEC_ERROR_ACCESS_DENIED = 0xFFFF0001,   /* permission check failed, in initilize context or
+                                                open session or invoke commnad */
+    TEEC_ERROR_CANCEL = 0xFFFF0002,          /* operation is already canceled */
     TEEC_ERROR_ACCESS_CONFLICT = 0xFFFF0003, /* confilct occurs in concurrent access to data,
                                                 error occurs in file operaions generally */
-    TEEC_ERROR_EXCESS_DATA = 0xFFFF0004, /* exceed max data to be handled by system */
-    TEEC_ERROR_BAD_FORMAT = 0xFFFF0005,  /* data format is invalid, Trusted Application cannot
-                                            handle it */
-    TEEC_ERROR_BAD_PARAMETERS = 0xFFFF0006, /* invalid parameters */
-    TEEC_ERROR_BAD_STATE = 0xFFFF0007,      /* operation failed in current state, when try to access
-                                               storage without initilize storage service */
+    TEEC_ERROR_EXCESS_DATA = 0xFFFF0004,     /* exceed max data to be handled by system */
+    TEEC_ERROR_BAD_FORMAT = 0xFFFF0005,      /* data format is invalid, Trusted Application cannot
+                                                handle it */
+    TEEC_ERROR_BAD_PARAMETERS = 0xFFFF0006,  /* invalid parameters */
+    TEEC_ERROR_BAD_STATE = 0xFFFF0007,       /* operation failed in current state, when try to access
+                                                storage without initilize storage service */
     TEEC_ERROR_ITEM_NOT_FOUND = 0xFFFF0008,  /* cannot find target item */
     TEEC_ERROR_NOT_IMPLEMENTED = 0xFFFF0009, /* request operation is not implemented */
     TEEC_ERROR_NOT_SUPPORTED = 0xFFFF000A,   /* request operation is not supported */
@@ -52,7 +53,13 @@ enum TEEC_ReturnCode {
     TEEC_ERROR_SHORT_BUFFER = 0xFFFF0010,    /* out buffer is not enough for current request */
     TEEC_ERROR_MAC_INVALID = 0xFFFF3071,     /* MAC value check failed */
     TEEC_ERROR_TARGET_DEAD = 0xFFFF3024,     /* Trusted Application is crashed */
-    TEEC_FAIL              = 0xFFFF5002      /* reserved error code */
+    TEEC_FAIL              = 0xFFFF5002,     /* common error */
+    TEEC_ERROR_EXTERNAL_CANCEL   = 0xFFFF0011,  /* used by adapt only, event caused User Interface operation aborted */
+    TEEC_ERROR_OVERFLOW          = 0xFFFF300F,  /* used by adapt only */
+    TEEC_ERROR_STORAGE_NO_SPACE  = 0xFFFF3041,  /* used by adapt only */
+    TEEC_ERROR_SIGNATURE_INVALID = 0xFFFF3072,  /* used by adapt only */
+    TEEC_ERROR_TIME_NOT_SET      = 0xFFFF5000,  /* used by adapt only */
+    TEEC_ERROR_TIME_NEEDS_RESET  = 0xFFFF5001   /* used by adapt only */
 };
 
 enum TEEC_ReturnCodeOrigin {
@@ -66,6 +73,7 @@ enum TEEC_SharedMemCtl {
     TEEC_MEM_INPUT = 0x1,  /* input type of memroy */
     TEEC_MEM_OUTPUT = 0x2, /* output type of memory */
     TEEC_MEM_INOUT = 0x3,  /* memory is used as both input and output */
+    TEEC_MEM_SHARED_INOUT = 0x4,  /* no copy shared memory */
 };
 
 enum TEEC_ParamType {
@@ -79,6 +87,7 @@ enum TEEC_ParamType {
                                        refer TEEC_TempMemoryReference */
     TEEC_ION_INPUT = 0x08,  /* input type of icon memory reference, refer TEEC_IonReference */
     TEEC_ION_SGLIST_INPUT = 0x09, /* input type of ion memory block reference, refer TEEC_IonSglistReference */
+    TEEC_MEMREF_SHARED_INOUT = 0x0a, /* no copy mem */
     TEEC_MEMREF_WHOLE = 0xc, /* use whole memory block, refer TEEC_RegisteredMemoryReference */
     TEEC_MEMREF_PARTIAL_INPUT = 0xd, /* input type of memory reference, refer TEEC_RegisteredMemoryReference */
     TEEC_MEMREF_PARTIAL_OUTPUT = 0xe, /* output type of memory reference, refer TEEC_RegisteredMemoryReference */
@@ -103,7 +112,7 @@ enum TEEC_LoginMethod {
     TEEC_LOGIN_GROUP_APPLICATION = 0x6, /* Login data about the group running
                                            the Client Application and about the
                                            Client Application itself is provided */
-    TEEC_LOGIN_IDENTIFY = 0x7,          /* iTrustee defined login type, Login data is provided by REE system */
+    TEEC_LOGIN_IDENTIFY = 0x7,          /* Login data is provided by REE system */
 };
 enum TST_CMD_ID {
     TST_CMD_ID_01 = 1,

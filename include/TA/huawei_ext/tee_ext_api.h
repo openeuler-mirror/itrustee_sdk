@@ -8,13 +8,14 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
+ * Description: Tee ext api header file
  */
 
 #ifndef TEE_EXT_API_H
 #define TEE_EXT_API_H
 
 #include "tee_defines.h"
-#include "tee_core_api.h"
+#include "tee_hw_ext_api_legacy.h"
 
 #ifdef __cplusplus
 #if __cplusplus
@@ -35,14 +36,18 @@ extern "C" {
 #define TEE_GET_REEINFO_SUCCESS 0
 #define TEE_GET_REEINFO_FAILED  1
 
+#define TEE_SMC_FROM_USR    0
+#define TEE_SMC_FROM_KERNEL 1
+
 #define RESERVED_BUF_SIZE 32
-typedef struct __caller_info {
+typedef struct ta_caller_info {
     uint32_t session_type;
     union {
         TEE_UUID caller_uuid;
         uint8_t ca_info[RESERVED_BUF_SIZE];
     } caller_identity;
-    uint8_t reserved[RESERVED_BUF_SIZE];
+    uint8_t smc_from_kernel_mode;
+    uint8_t reserved[RESERVED_BUF_SIZE - 1];
 } caller_info;
 
 /*
@@ -54,7 +59,7 @@ typedef struct __caller_info {
  * return TEE_SUCCESS operation success
  * return others failed to get caller info
  */
-TEE_Result TEE_EXT_GetCallerInfo(caller_info *caller_info_data, uint32_t length);
+TEE_Result tee_ext_get_caller_info(caller_info *caller_info_data, uint32_t length);
 
 /*
  * verify TA's caller's identify
@@ -86,8 +91,32 @@ TEE_Result AddCaller_TA_all(void);
  *
  * @return session type of current session
  */
-uint32_t TEE_GetSessionType(void);
+uint32_t tee_get_session_type(void);
 
+/*
+ * Check CA params during CA Authentication
+ *
+ * @param param_types             [IN] CA caller's param types
+ * @param params[TEE_PARAMS_NUM]  [IN] CA caller's params
+ *
+ * return TEE_SUCCESS
+ */
+TEE_Result TEE_EXT_CheckClientPerm(uint32_t param_types, const TEE_Param params[TEE_PARAMS_NUM]);
+
+/*
+ * derive key from platform key
+ *
+ * @param object      [IN/OUT] input data in ObjectInfo->keytype, output keys in Attributes.
+ * @param keySize     [IN]     key size in bits, it desides the ecc curve type too.
+ * @param params      [IN]     unused
+ * @param paramCount  [IN]     unused
+ * @param exinfo      [IN]     user info as derive slat.
+ * @param exinfo_size [IN]     size of user info, Max is 64bytes, must bigger than 0.
+ *
+ * @return TEE_SUCCESS means success, others means failed.
+ */
+TEE_Result tee_ext_derive_ta_platfrom_keys(TEE_ObjectHandle object, uint32_t key_size, const TEE_Attribute *params,
+    uint32_t param_count, const uint8_t *exinfo, uint32_t exinfo_size);
 #ifdef __cplusplus
 #if __cplusplus
 }

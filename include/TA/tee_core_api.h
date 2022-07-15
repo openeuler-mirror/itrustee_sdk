@@ -8,6 +8,7 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
+ * Description: tee core api definitions
  */
 #ifndef __TEE_CORE_API_H
 #define __TEE_CORE_API_H
@@ -79,4 +80,5 @@ bool TEE_UnmaskCancellation(void);
 
 /* not supported */
 bool TEE_MaskCancellation(void);
+
 #endif
