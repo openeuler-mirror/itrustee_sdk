@@ -73,6 +73,9 @@ TEE_Result CmdRSAGenKeypair(uint32_t keySize, uint32_t numKey)
 {
     TEE_Result ret;
     TEE_ObjectHandle tmpKeyObj = NULL;
+ 
+    /* GP 1.2 define maxObjectSize with bit unit. */
+    keySize *= 8;
     ret = TEE_AllocateTransientObject(TEE_TYPE_RSA_KEYPAIR, keySize, &tmpKeyObj);
     if (ret != TEE_SUCCESS) {
         SLogError("CmdRSAGenKeypair: TEE_AllocateTransientObject failed.");
@@ -204,7 +207,8 @@ TEE_Result CmdRSACryptoParamCheck(TEE_OperationHandle *Operation, Buffer *buf1, 
         SLogError("CmdRSACrypto: buf is null, or bufLen is 0.");
         return TEE_ERROR_BAD_PARAMETERS;
     }
-    ret = TEE_AllocateOperation(Operation, algorithm, cryptmode, buf2->size);
+    /* GP 1.2 define maxKeySize with bit unit. */
+    ret = TEE_AllocateOperation(Operation, algorithm, cryptmode, buf2->size * 8);
     if (ret != TEE_SUCCESS) {
         SLogError("CmdRSACrypto TEE_AllocateOperation failed.");
         return ret;
@@ -275,14 +279,11 @@ TEE_Result CmdRSACrypto(uint32_t numKey, uint32_t alg, Buffer *buf1, Buffer *buf
     return ret;
 }
 
-TEE_Result FreeOperationHandleParam(TEE_OperationHandle Operation1, TEE_OperationHandle Operation2,
+TEE_Result FreeOperationHandleParam(TEE_OperationHandle Operation,
                                     TEE_Result ret)
 {
-    if (Operation1) {
-        TEE_FreeOperation(Operation1);
-    }
-    if (Operation2) {
-        TEE_FreeOperation(Operation2);
+    if (Operation) {
+        TEE_FreeOperation(Operation);
     }
     return ret;
 }
@@ -355,7 +356,7 @@ TEE_Result CmdRSASignVerify(uint32_t numKey, uint32_t alg, Buffer *buf1, Buffer 
     /* SHA 256 签名初始化 */
     ret = CheckRsaSha256Init(TEE_AllocateOperation(&Operation1, TEE_ALG_SHA256, TEE_MODE_DIGEST, 0),
                              TEE_DigestDoFinal(Operation1, buf1->buffer, buf1->size, buf, (size_t *)&bufLen),
-                             TEE_AllocateOperation(&Operation2, algorithm, mode, RSA_KEY_SIZE));
+                             TEE_AllocateOperation(&Operation2, algorithm, mode, RSA_KEY_SIZE * 8));
     if (ret != TEE_SUCCESS) {
         goto clear;
     }
@@ -373,11 +374,11 @@ TEE_Result CmdRSASignVerify(uint32_t numKey, uint32_t alg, Buffer *buf1, Buffer 
             goto clear;
     }
     if (mode == TEE_MODE_SIGN) {
-        retSign = TEE_AsymmetricSignDigest(Operation2, NULL, 0, buf1->buffer, buf1->size, buf2->buffer, &outlen);
+        retSign = TEE_AsymmetricSignDigest(Operation2, NULL, 0, buf, bufLen, buf2->buffer, &outlen);
         retVer = TEE_SUCCESS;
     } else if (mode == TEE_MODE_VERIFY) {
         retSign = TEE_SUCCESS;
-        retVer = TEE_AsymmetricVerifyDigest(Operation2, NULL, 0, buf1->buffer, buf1->size, buf2->buffer, outlen);
+        retVer = TEE_AsymmetricVerifyDigest(Operation2, NULL, 0, buf, bufLen, buf2->buffer, outlen);
     } else {
         SLogError("invalid mode=%x for Sign or Verify", mode);
         goto clear;
@@ -387,7 +388,7 @@ TEE_Result CmdRSASignVerify(uint32_t numKey, uint32_t alg, Buffer *buf1, Buffer 
         goto clear;
     }
 clear:
-    return FreeOperationHandleParam(Operation1, Operation2, ret);
+    return FreeOperationHandleParam(Operation2, ret);
 }
 /* ----------------------------------------------------------------------------
  *   Trusted Application Entry Points

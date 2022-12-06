@@ -7,5 +7,5 @@
 # API_LEVEL=2 indicates GP 1.1.1 which is the current version of the partner
 # API_LEVEL=3 indicates GP 1.2 which is the version we both going to support
 # If no API_LEVEL is specified, API of GP 1.0 will be taked
-CFLAGS += -DAPI_LEVEL=1
+CFLAGS += -DAPI_LEVEL=3
 TARGET_IS_ARM64=y
