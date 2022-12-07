@@ -1,0 +1,1 @@
+The config binary signed by Huawei should be placed here.
