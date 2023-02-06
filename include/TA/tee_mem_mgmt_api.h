@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Huawei Technologies Co., Ltd. 2012-2020. All rights reserved.
- * iTrustee licensed under the Mulan PSL v2.
+ * Licensed under the Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
  *     http://license.coscl.org.cn/MulanPSL2
@@ -62,7 +62,7 @@ enum MALLOC_HINT {
  *
  * @return void
  */
-#if defined(API_LEVEL) && (API_LEVEL >= API_LEVEL1_2)
+#if defined(API_LEVEL) && defined(API_LEVEL1_2) && (API_LEVEL >= API_LEVEL1_2)
 void TEE_MemFill(void *buffer, uint8_t x, size_t size);
 #else
 void TEE_MemFill(void *buffer, uint32_t x, size_t size);

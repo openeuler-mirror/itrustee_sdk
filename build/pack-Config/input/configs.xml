@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ConfigInfo>
+  <TA_Basic_Info>
+      <service_name>demo</service_name>
+    <uuid>00000000-0000-0000-0000-000000000000</uuid>
+  </TA_Basic_Info>
+  <TA_Manifest_Info>
+    <instance_keep_alive>false</instance_keep_alive>
+    <stack_size>2048</stack_size>
+    <heap_size>20480</heap_size>
+    <multi_command>false</multi_command>
+    <multi_session>true</multi_session>
+    <single_instance>true</single_instance>
+  </TA_Manifest_Info>
+</ConfigInfo>

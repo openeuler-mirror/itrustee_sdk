@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Huawei Technologies Co., Ltd. 2012-2020. All rights reserved.
- * iTrustee licensed under the Mulan PSL v2.
+ * Licensed under the Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
  *     http://license.coscl.org.cn/MulanPSL2
@@ -66,7 +66,7 @@ void TEE_BigIntInit(TEE_BigInt *bigInt, size_t len);
  */
 void TEE_BigIntInitFMMContext(TEE_BigIntFMMContext *context, size_t len, const TEE_BigInt *modulus);
 
-#if defined(API_LEVEL) && (API_LEVEL >= API_LEVEL1_1_1)
+#if defined(API_LEVEL) && defined(API_LEVEL1_1_1) && (API_LEVEL >= API_LEVEL1_1_1)
 
 /*
  * calculates the necessary prerequisites for the fast modular multiplication and stores them in a context.
@@ -191,7 +191,7 @@ bool TEE_BigIntGetBit(const TEE_BigInt *src, uint32_t bitIndex);
  */
 uint32_t TEE_BigIntGetBitCount(const TEE_BigInt *src);
 
-#if defined(API_LEVEL) && (API_LEVEL >= API_LEVEL1_2)
+#if defined(API_LEVEL) && defined(API_LEVEL1_2) && (API_LEVEL >= API_LEVEL1_2)
 /*
  * sets the bitIndexth bit of the natural binary representation of |op| to 1 or 0
  *
@@ -250,14 +250,14 @@ void TEE_BigIntAdd(TEE_BigInt *dest, const TEE_BigInt *op1, const TEE_BigInt *op
 void TEE_BigIntSub(TEE_BigInt *dest, const TEE_BigInt *op1, const TEE_BigInt *op2);
 
 /*
- * negates an operand: dest = -op
+ * negates an operand: dest = -src
  *
- * @param dest [OUT] PPointer to TEE_BigInt to store the result -op
+ * @param dest [OUT] PPointer to TEE_BigInt to store the result -src
  * @param op [IN] Pointer to the operand to be negated
  *
  * @return void
  */
-void TEE_BigIntNeg(TEE_BigInt *dest, const TEE_BigInt *op);
+void TEE_BigIntNeg(TEE_BigInt *dest, const TEE_BigInt *src);
 
 /*
  * computes dest = op1 * op2
@@ -438,7 +438,7 @@ void TEE_BigIntConvertFromFMM(TEE_BigInt *dest, const TEE_BigIntFMM *src, const 
 void TEE_BigIntComputeFMM(TEE_BigIntFMM *dest, const TEE_BigIntFMM *op1, const TEE_BigIntFMM *op2, const TEE_BigInt *n,
                           const TEE_BigIntFMMContext *context);
 
-#if defined(API_LEVEL) && (API_LEVEL >= API_LEVEL1_1_1)
+#if defined(API_LEVEL) && defined(API_LEVEL1_1_1) && (API_LEVEL >= API_LEVEL1_1_1)
 /*
  * computes dest = (op1 ^ op2) (mod n).
  *

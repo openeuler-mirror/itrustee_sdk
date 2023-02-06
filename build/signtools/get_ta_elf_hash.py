@@ -1,9 +1,8 @@
 #!/usr/bin/env python3
-# coding:utf-8
-"""
-Calculate the elfhash values of TAs by segment and combine the values.
-Copyright @ Huawei Technologies Co., Ltd. 2022-2022. All rights reserved.
-# iTrustee licensed under the Mulan PSL v2.
+# coding=utf-8
+#----------------------------------------------------------------------------
+# Copyright @ Huawei Technologies Co., Ltd. 2022-2023. All rights reserved.
+# Licensed under the Mulan PSL v2.
 # You can use this software according to the terms and conditions of the Mulan
 # PSL v2.
 # You may obtain a copy of Mulan PSL v2 at:
@@ -12,6 +11,11 @@ Copyright @ Huawei Technologies Co., Ltd. 2022-2022. All rights reserved.
 # KIND, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO
 # NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
 # See the Mulan PSL v2 for more details.
+# Calculate the elfhash values of TAs by segment and combine the values.
+#----------------------------------------------------------------------------
+
+"""
+calculate the elfhash values of TA
 """
 
 from __future__ import print_function
@@ -19,6 +23,7 @@ import os
 import sys
 import hashlib
 import struct
+import logging
 
 
 def elf_header_verify_check(elf_header):
@@ -190,10 +195,10 @@ def get_code_segment_from_elf(elf_file_name, out_hash_file_name, sign_data):
             elf_hd_buf = elf_fp.read(elf_info.elf32_hdr_size)
             elf_header = Elf32Ehdr(elf_hd_buf)
         else:
-            print("No Support ELFINFO_CLASS")
+            logging.error("No Support ELFINFO_CLASS")
 
         if elf_header_verify_check(elf_header) is False:
-            print("ELF file failed verification: %s" % elf_file_name)
+            logging.error("ELF file failed verification: %s", elf_file_name)
 
         for i_phd in range(0, elf_header.e_phnum):
             if elf_ident.ei_class == elf_info.elfinfo_class_64:
@@ -201,7 +206,7 @@ def get_code_segment_from_elf(elf_file_name, out_hash_file_name, sign_data):
             elif elf_ident.ei_class == elf_info.elfinfo_class_32:
                 elf_phd_header = Elf32Phdr(elf_fp.read(elf_info.elf32_phdr_size))
             else:
-                print("No Support ELFINFO_CLASS")
+                logging.error("No Support ELFINFO_CLASS")
 
             if (elf_phd_header.p_type != elf_info.load_type) or \
                (elf_phd_header.p_flags & elf_info.exec_flag != elf_info.exec_flag) or \

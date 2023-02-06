@@ -603,6 +603,7 @@ typedef struct {
 #define PT_GNU_EH_FRAME	0x6474e550
 #define PT_GNU_STACK	0x6474e551
 #define PT_GNU_RELRO	0x6474e552
+#define PT_GNU_PROPERTY	0x6474e553
 #define PT_LOSUNW	0x6ffffffa
 #define PT_SUNWBSS	0x6ffffffa
 #define PT_SUNWSTACK	0x6ffffffb
@@ -685,6 +686,8 @@ typedef struct {
 #define NT_ARM_PAC_MASK	0x406
 #define NT_ARM_PACA_KEYS	0x407
 #define NT_ARM_PACG_KEYS	0x408
+#define NT_ARM_TAGGED_ADDR_CTRL	0x409
+#define NT_ARM_PAC_ENABLED_KEYS	0x40a
 #define NT_METAG_CBUF	0x500
 #define NT_METAG_RPIPE	0x501
 #define NT_METAG_TLS	0x502
@@ -1085,6 +1088,7 @@ typedef struct {
 
 #define NT_GNU_BUILD_ID	3
 #define NT_GNU_GOLD_VERSION	4
+#define NT_GNU_PROPERTY_TYPE_0	5
 
 
 

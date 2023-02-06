@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Huawei Technologies Co., Ltd. 2019-2020. All rights reserved.
- * iTrustee licensed under the Mulan PSL v2.
+ * Licensed under the Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
  *     http://license.coscl.org.cn/MulanPSL2
@@ -43,4 +43,5 @@ TEE_Result TEE_SetCryptoFlag(TEE_OperationHandle operation, uint32_t crypto);
  * @retval TEE_ERROR_BAD_PARAMETERS: Operation is NULLi or crypto is invalid
  */
 TEE_Result TEE_SetObjectFlag(TEE_ObjectHandle object, uint32_t crypto);
+
 #endif

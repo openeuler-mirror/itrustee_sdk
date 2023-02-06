@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2022-2022. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2022-2023. All rights reserved.
  * Licensed under the Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -23,14 +23,18 @@ static const char *g_log_path = "dyn_crt_op.log";
 static TEE_Result log_open(TEE_ObjectHandle *obj, uint32_t flag)
 {
     uint32_t storage_id = TEE_OBJECT_STORAGE_PRIVATE;
+    uint32_t create_flag = TEE_DATA_FLAG_ACCESS_WRITE |
+                           TEE_DATA_FLAG_ACCESS_WRITE_META |
+                           TEE_DATA_FLAG_ACCESS_READ;
     /* open log file */
     TEE_Result ret = TEE_OpenPersistentObject(storage_id, g_log_path, strlen(g_log_path), flag, obj);
     if (ret == TEE_ERROR_ITEM_NOT_FOUND &&
-        ((flag & TEE_DATA_FLAG_ACCESS_WRITE != 0) || (flag & TEE_DATA_FLAG_ACCESS_WRITE_META != 0))) {
+        (((flag & TEE_DATA_FLAG_ACCESS_WRITE) != 0) || ((flag & TEE_DATA_FLAG_ACCESS_WRITE_META) != 0) ||
+        ((flag & TEE_DATA_FLAG_SHARE_WRITE) != 0))) {
         /* create it if file is not exist when writing or changing metadata */
         tlogi("file not exist, creating: %s\n", g_log_path);
         ret = TEE_CreatePersistentObject(storage_id, g_log_path, strlen(g_log_path),
-                                         flag, TEE_HANDLE_NULL,
+                                         create_flag, TEE_HANDLE_NULL,
                                          NULL, 0, obj);
         if (ret != TEE_SUCCESS)
             tloge("create file failed: %s\n", g_log_path);
@@ -102,9 +106,12 @@ TEE_Result cert_log_write(char *log_info)
 {
     TEE_Result ret;
     TEE_ObjectHandle obj;
+    if (log_info == NULL)
+        return TEE_ERROR_BAD_PARAMETERS;
     /* 1. open log file */
     uint32_t open_flag = TEE_DATA_FLAG_ACCESS_WRITE |
-                         TEE_DATA_FLAG_ACCESS_WRITE_META |
+                         TEE_DATA_FLAG_SHARE_WRITE |
+                         TEE_DATA_FLAG_SHARE_READ |
                          TEE_DATA_FLAG_ACCESS_READ;
     ret = log_open(&obj, open_flag);
     if (ret != TEE_SUCCESS) {
@@ -128,7 +135,6 @@ TEE_Result cert_log_write(char *log_info)
         tloge("roll back file failed: %s\n", g_log_path);
         goto close;
     }
-
 close:
     (void)TEE_SyncPersistentObject(obj);
     TEE_CloseObject(obj);
@@ -140,8 +146,10 @@ TEE_Result cert_log_read(char *dst, uint64_t dst_len, uint32_t *read_len)
 {
     TEE_Result ret;
     TEE_ObjectHandle obj;
+    if (dst == NULL || read_len == NULL)
+        return TEE_ERROR_BAD_PARAMETERS;
     /* 1. open log file */
-    uint32_t open_flag = TEE_DATA_FLAG_ACCESS_READ;
+    uint32_t open_flag = TEE_DATA_FLAG_ACCESS_READ | TEE_DATA_FLAG_SHARE_READ;
     ret = log_open(&obj, open_flag);
     if (ret != TEE_SUCCESS) {
         tloge("open file failed: %s\n", g_log_path);

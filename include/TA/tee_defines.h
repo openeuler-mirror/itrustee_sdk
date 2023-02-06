@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Huawei Technologies Co., Ltd. 2018-2020. All rights reserved.
- * iTrustee licensed under the Mulan PSL v2.
+ * Licensed under the Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
  *     http://license.coscl.org.cn/MulanPSL2
@@ -277,7 +277,7 @@ enum TEE_Result_Value {
     TEE_FAIL                                = 0xFFFF5002, /* system error                                           */
     TEE_ERROR_TIMER                         = 0xFFFF6000, /* base value of timer error codes                        */
     TEE_ERROR_TIMER_CREATE_FAILED           = 0xFFFF6001, /* failed to create timer                                 */
-    TEE_ERROR_TIMER_DESTORY_FAILED          = 0xFFFF6002, /* failed to destory timer                                */
+    TEE_ERROR_TIMER_DESTROY_FAILED          = 0xFFFF6002, /* failed to destroy timer                                */
     TEE_ERROR_TIMER_NOT_FOUND               = 0xFFFF6003, /* timer not found                                        */
     TEE_ERROR_RPMB_BASE                     = 0xFFFF7000, /* base value of RPMB error codes                         */
     TEE_ERROR_RPMB_GENERIC                  = 0xFFFF7001, /* generic error of RPMB operations                       */
@@ -315,7 +315,8 @@ enum TEE_Result_Value {
     TEE_ERROR_ANTIROOT_RSP_FAIL             = 0xFFFF9110, /* AntiRoot Response verify failed                        */
     TEE_ERROR_ANTIROOT_INVOKE_ERROR         = 0xFFFF9111, /* AntiRoot ERROR during invokecmd                        */
     TEE_ERROR_AUDIT_FAIL                    = 0xFFFF9112, /* audit failed                                           */
-    TEE_FAIL2                               = 0xFFFF9113  /* unused                                                 */
+    TEE_FAIL2                               = 0xFFFF9113, /* unused                                                 */
+    TEE_ERROR_IPC_OVERFLOW                  = 0xFFFF9114  /* IPC Channel overflow error                             */
 };
 
 /*
@@ -343,8 +344,8 @@ typedef TEE_Result TEEC_Result;
 #define TEE_ORIGIN_TEE             0x00000003
 #define TEE_ORIGIN_TRUSTED_APP     0x00000004
 
-#ifndef _TEE_TA_SESSION_HANDLE
-#define _TEE_TA_SESSION_HANDLE
+#ifndef TEE_TA_SESSION_HANDLE
+#define TEE_TA_SESSION_HANDLE
 typedef uint32_t TEE_TASessionHandle;
 #endif
 

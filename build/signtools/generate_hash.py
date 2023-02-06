@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-# coding:utf-8
+# coding=utf-8
 #----------------------------------------------------------------------------
 # Copyright (c) Huawei Technologies Co., Ltd. 2020-2020. All rights reserved.
-# iTrustee licensed under the Mulan PSL v2.
+# Licensed under the Mulan PSL v2.
 # You can use this software according to the terms and conditions of the Mulan
 # PSL v2.
 # You may obtain a copy of Mulan PSL v2 at:
@@ -37,11 +37,11 @@ def gen_hash(hash_type, in_data, out_file_path):
     hash_fp = os.fdopen(fd_hash, "wb")
     # fixed hash prefix value
     if int(hash_type) == HASH256:
-        hash_fp.write(struct.pack('B'*19, 0x30, 0x31, 0x30, 0x0d, 0x06, \
+        hash_fp.write(struct.pack('B' * 19, 0x30, 0x31, 0x30, 0x0d, 0x06, \
             0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x01, \
             0x05, 0x00, 0x04, 0x20))
     elif int(hash_type) == HASH512:
-        hash_fp.write(struct.pack('B'*19, 0x30, 0x51, 0x30, 0x0d, 0x06, \
+        hash_fp.write(struct.pack('B' * 19, 0x30, 0x51, 0x30, 0x0d, 0x06, \
             0x09, 0x60, 0x86, 0x48, 0x01, 0x65, 0x03, 0x04, 0x02, 0x03, \
             0x05, 0x00, 0x04, 0x40))
     hash_fp.write(hash_op.digest())

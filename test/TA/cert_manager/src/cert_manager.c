@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2022-2022. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2022-2023. All rights reserved.
  * Licensed under the Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <tee_log.h>
 #include <permsrv_api_cert.h>
+#include <permsrv_api_legacy.h>
 #include <tee_ext_api.h>
 #include <securec.h>
 #include <time.h>
@@ -24,11 +25,13 @@ enum {
     SAVE_CERT_CMD   = 1,
     SEARCH_CERT_CMD = 2,
     DEL_CERT_CMD    = 3,
-    SEARCH_LOG_CMD  = 4
+    SEARCH_LOG_CMD  = 4,
+    SEND_CRL_CMD    = 5
 };
 
 #define ACTION_CRT_EXPORT "export"
-#define ACTION_CRT_IMPORT "import"
+#define ACTION_CRT_IMPORT "cert_import"
+#define ACTION_CRL_IMPORT "crl_import"
 #define ACTION_CRT_REMOVE "remove"
 #define ACTION_CRT_UNDEFINED "undefined"
 #define MAX_BUFFER_LEN 8192
@@ -92,6 +95,29 @@ static TEE_Result cert_verify_and_send(uint32_t param_types, TEE_Param params[4]
     return ret;
 }
 
+static TEE_Result crl_send_service(uint32_t param_types, TEE_Param params[4])
+{
+    TEE_Result ret;
+    if (!check_param_type(param_types,
+        TEE_PARAM_TYPE_MEMREF_INPUT,
+        TEE_PARAM_TYPE_NONE,
+        TEE_PARAM_TYPE_NONE,
+        TEE_PARAM_TYPE_NONE)) {
+        tloge("Bad expected parameter types, 0x%x.\n", param_types);
+        return TEE_ERROR_BAD_PARAMETERS;
+    }
+
+    if (params[0].memref.size == 0 || params[0].memref.size > MAX_BUFFER_LEN || params[0].memref.buffer == NULL) {
+        tloge("Bad expected parameter.\n");
+        return TEE_ERROR_BAD_PARAMETERS;
+    }
+
+    ret = TEE_EXT_crl_cert_process(params[0].memref.buffer, params[0].memref.size);
+    if (ret != TEE_SUCCESS)
+        tloge("crl send failed\n");
+    return ret;
+}
+
 static TEE_Result cert_search_service(uint32_t param_types, uint32_t cmd_id, TEE_Param params[4])
 {
     TEE_Result ret = TEE_SUCCESS;
@@ -114,7 +140,7 @@ static TEE_Result cert_search_service(uint32_t param_types, uint32_t cmd_id, TEE
 
     dst = (uint8_t *)malloc(params[0].memref.size);
     if (dst == NULL) {
-        tloge("malloc failed\n");
+        tloge("malloc failed");
         return TEE_ERROR_OUT_OF_MEMORY;
     }
 
@@ -166,10 +192,10 @@ static TEE_Result cert_delete_service(uint32_t param_types)
 }
 
 /**
- * Function TA_CreateEntryPoint
- * Description:
- *   The function TA_CreateEntryPoint is the Trusted Application's constructor,
- *   which the Framework calls when it creates a new instance of the Trusted Application.
+ *  Function TA_CreateEntryPoint
+ *  Description:
+ *    The function TA_CreateEntryPoint is the Trusted Application's constructor,
+ *    which the Framework calls when it creates a new instance of the Trusted Application.
  */
 TEE_Result TA_CreateEntryPoint(void)
 {
@@ -180,12 +206,12 @@ TEE_Result TA_CreateEntryPoint(void)
 }
 
 /**
- * Function TA_OpenSessionEntryPoint
- * Description:
- *   The Framework calls the function TA_OpenSessionEntryPoint
- *   when a client requests to open a session with the Trusted Application.
- *   The open session request may result in a new Trusted Application instance
- *   being created.
+ *  Function TA_OpenSessionEntryPoint
+ *  Description:
+ *    The Framework calls the function TA_OpenSessionEntryPoint
+ *    when a client requests to open a session with the Trusted Application.
+ *    The open session request may result in a new Trusted Application instance
+ *    being created.
  */
 TEE_Result TA_OpenSessionEntryPoint(uint32_t paramTypes,
     TEE_Param params[4], void** sessionContext)
@@ -201,10 +227,10 @@ TEE_Result TA_OpenSessionEntryPoint(uint32_t paramTypes,
 }
 
 /**
- * Function TA_InvokeCommandEntryPoint
- * Description:
- *   The Framework calls this function when the client invokes a command
- *   within the given session.
+ *  Function TA_InvokeCommandEntryPoint
+ *  Description:
+ *    The Framework calls this function when the client invokes a command
+ *    within the given session.
  */
 TEE_Result TA_InvokeCommandEntryPoint(void* sessionContext, uint32_t cmd_id,
     uint32_t paramTypes, TEE_Param params[4])
@@ -219,6 +245,12 @@ TEE_Result TA_InvokeCommandEntryPoint(void* sessionContext, uint32_t cmd_id,
         ret = cert_verify_and_send(paramTypes, params);
         if (ret != TEE_SUCCESS)
             tloge("certificate restoring failed\n");
+        break;
+    case SEND_CRL_CMD:
+        action = ACTION_CRL_IMPORT;
+        ret = crl_send_service(paramTypes, params);
+        if (ret != TEE_SUCCESS)
+            tloge("crl restoring failed\n");
         break;
     case SEARCH_CERT_CMD:
     /* fall through: to be handled with the same function as SEARCH_LOG_CMD case */
@@ -244,11 +276,11 @@ TEE_Result TA_InvokeCommandEntryPoint(void* sessionContext, uint32_t cmd_id,
 }
 
 /**
- * Function TA_CloseSessionEntryPoint
- * Description:
- *   The Framework calls this function to close a client session.
- *   During the call to this function the implementation can use
- *   any session functions.
+ *  Function TA_CloseSessionEntryPoint
+ *  Description:
+ *    The Framework calls this function to close a client session.
+ *    During the call to this function the implementation can use
+ *    any session functions.
  */
 void TA_CloseSessionEntryPoint(void* sessionContext)
 {
@@ -258,10 +290,10 @@ void TA_CloseSessionEntryPoint(void* sessionContext)
 }
 
 /**
- * Function TA_DestroyEntryPoint
- * Description:
- *   The function TA_DestroyEntryPoint is the Trusted Application's destructor,
- *   which the Framework calls when the instance is being destroyed.
+ *  Function TA_DestroyEntryPoint
+ *  Description:
+ *    The function TA_DestroyEntryPoint is the Trusted Application's destructor,
+ *    which the Framework calls when the instance is being destroyed.
  */
 void TA_DestroyEntryPoint(void)
 {
