@@ -1,7 +1,7 @@
-gpd.ta.appID:   		    e08f7eca-e875-440e-9ab0-5f381136c600
-gpd.ta.service_name:		tee_qta
-gpd.ta.singleInstance:		true
-gpd.ta.multiSession: 		true
-gpd.ta.instanceKeepAlive:	false
-gpd.ta.dataSize:		    304857
-gpd.ta.stackSize:		    64768
+gpd.ta.appID:              e08f7eca-e875-440e-9ab0-5f381136c600
+gpd.ta.service_name:       tee_qta
+gpd.ta.singleInstance:     true
+gpd.ta.multiSession:       true
+gpd.ta.instanceKeepAlive:  false
+gpd.ta.dataSize:           304857
+gpd.ta.stackSize:          64768

@@ -38,5 +38,5 @@ $(TARGET_LIB): $(TARGET_LIB_BOUNDSCHECK) $(LIB_SOURCES)
 
 clean:
 	$(MAKE) -C $(LIB_BOUNDSCHECK_DIR) clean
-	rm -rf $(TARGET_DIR)
 	rm -rf $(LIB_OBJECTS)
+	rm -rf $(TARGET_DIR)

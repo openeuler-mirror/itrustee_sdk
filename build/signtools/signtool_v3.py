@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-# coding:utf-8
+# coding=utf-8
 #----------------------------------------------------------------------------
 # Copyright (c) Huawei Technologies Co., Ltd. 2018-2020. All rights reserved.
-# iTrustee licensed under the Mulan PSL v2.
+# Licensed under the Mulan PSL v2.
 # You can use this software according to the terms and conditions of the Mulan
 # PSL v2.
 # You may obtain a copy of Mulan PSL v2 at:
@@ -22,21 +22,21 @@ import shutil
 import argparse
 import configparser
 import re
+import logging
 
 
 from manifest import process_manifest_file
 from generate_signature import gen_ta_signature
-from Cryptodome.Hash import SHA256
-from Cryptodome.Cipher import PKCS1_OAEP
-from Cryptodome.PublicKey import RSA
-from Cryptodome.Cipher import AES
-from Cryptodome.Random import get_random_bytes
+from Crypto.Hash import SHA256
+from Crypto.Cipher import PKCS1_OAEP
+from Crypto.PublicKey import RSA
+from Crypto.Cipher import AES
+from Crypto.Random import get_random_bytes
 
 
-# fixed value, {1, 2} version are abandoned.
-VERSION = 3
-TA_VERSION = 3
-
+TYPE_PUBKEY     = 0
+TYPE_CERT       = 1
+TYPE_CERT_CHAIN = 2
 
 MAGIC1 = 0xA5A55A5A
 MAGIC2 = 0x55AA
@@ -65,6 +65,7 @@ ELF_INFO_VERSION_CURRENT = 1
 ELF_BLOCK_ALIGN = 0x1000
 
 SEC_HEADER_BYTES = 16
+SING_BIG_ENDIAN = False
 
 
 def whitelist_check(intput_str):
@@ -85,7 +86,7 @@ def integer_check(intput_str):
 def verify_elf_header(elf_path):
     elf_type = 0
     with open(elf_path, 'rb') as elf:
-        elf_data = struct.unpack('B'*16, elf.read(16))
+        elf_data = struct.unpack('B' * 16, elf.read(16))
         elf_type = elf_data[4]
         if ((elf_data[ELF_INFO_MAGIC0_INDEX] != ELF_INFO_MAGIC0) or \
                 (elf_data[ELF_INFO_MAGIC1_INDEX] != ELF_INFO_MAGIC1) or \
@@ -93,7 +94,7 @@ def verify_elf_header(elf_path):
                 (elf_data[ELF_INFO_MAGIC3_INDEX] != ELF_INFO_MAGIC3) or \
                 (elf_data[ELF_INFO_VERSION_INDEX] != \
                 ELF_INFO_VERSION_CURRENT)):
-            print("invalid elf header info")
+            logging.error("invalid elf header info")
             raise RuntimeError
 
         if ((elf_type == 1 and elf_data[ELF_INFO_CLASS_INDEX] != \
@@ -101,7 +102,7 @@ def verify_elf_header(elf_path):
                 (elf_type == 2 and elf_data[ELF_INFO_CLASS_INDEX] != \
                 ELF_INFO_CLASS_64) or \
                 (elf_type != 1 and elf_type != 2)):
-            print("invliad elf format")
+            logging.error("invliad elf format")
             raise RuntimeError
     return
 
@@ -116,7 +117,10 @@ class AllCfg:
     server_ip = ""
     config_path = ""
     sign_key = ""
+    sign_key_type = "0"
     sign_alg = "RSA"
+    ta_cert_chain = ""
+    ta_version = 3
 
 
 class PublicCfg:
@@ -136,6 +140,14 @@ class PublicCfg:
 
         all_cfg.config_path = parser.get(cfg_section, "configPath")
         all_cfg.sign_key = parser.get(cfg_section, "secSignKey")
+        if parser.has_option(cfg_section, "secTaVersion"):
+            all_cfg.ta_version = int(parser.get(cfg_section, "secTaVersion"))
+        else:
+            all_cfg.ta_version = 3
+        if parser.has_option(cfg_section, "secSignKeyType"):
+            all_cfg.sign_key_type = parser.get(cfg_section, "secSignKeyType")
+        if parser.has_option(cfg_section, "secTaCertChain"):
+            all_cfg.ta_cert_chain = parser.get(cfg_section, "secTaCertChain")
 
 
 class PrivateCfg:
@@ -162,64 +174,69 @@ class PrivateCfg:
 
 
 def check_cfg(cfg):
+    ret = 0
     if cfg.release_type != "":
         if integer_check(cfg.release_type):
-            print("secReleaseType is invalid.")
-            return 1
+            logging.error("secReleaseType is invalid.")
+            ret = 1
     if cfg.otrp_flag != "":
         if integer_check(cfg.otrp_flag):
-            print("secOtrpFlag is invalid.")
-            return 1
+            logging.error("secOtrpFlag is invalid.")
+            ret = 1
     if cfg.sign_type != "":
         if integer_check(cfg.sign_type):
-            print("secSignType is invalid.")
-            return 1
+            logging.error("secSignType is invalid.")
+            ret = 1
     if cfg.server_ip != "":
         if whitelist_check(cfg.server_ip):
-            print("secSignServerIp is invalid.")
-            return 1
+            logging.error("secSignServerIp is invalid.")
+            ret = 1
     if cfg.config_path != "":
         if whitelist_check(cfg.config_path):
-            print("configPath is invalid.")
-            return 1
+            logging.error("configPath is invalid.")
+            ret = 1
     if cfg.sign_key != "":
         if whitelist_check(cfg.sign_key):
-            print("secSignKey is invalid.")
-            return 1
+            logging.error("secSignKey is invalid.")
+            ret = 1
     if cfg.public_key != "":
         if whitelist_check(cfg.public_key):
-            print("secEncryptKey is invalid.")
-            return 1
+            logging.error("secEncryptKey is invalid.")
+            ret = 1
     if cfg.pub_key_len != "":
         if integer_check(cfg.pub_key_len):
-            print("secEncryptKeyLen is invalid.")
-            return 1
+            logging.error("secEncryptKeyLen is invalid.")
+            ret = 1
     if cfg.re_sign_flag != "":
         if integer_check(cfg.re_sign_flag):
-            print("secReSignFlag is invalid.")
-            return 1
+            logging.error("secReSignFlag is invalid.")
+            ret = 1
     if cfg.hash_type != "":
         if integer_check(cfg.hash_type):
-            print("secHashType is invalid.")
-            return 1
+            logging.error("secHashType is invalid.")
+            ret = 1
     if cfg.sign_key_len != "":
         if integer_check(cfg.sign_key_len):
-            print("secSignKeyLen is invalid.")
-            return 1
+            logging.error("secSignKeyLen is invalid.")
+            ret = 1
     if cfg.padding_type != "":
         if integer_check(cfg.padding_type):
-            print("secPaddingType is invalid.")
-            return 1
+            logging.error("secPaddingType is invalid.")
+            ret = 1
     if cfg.sign_alg != "":
         if whitelist_check(cfg.sign_alg):
-            print("secSignAlg is invalid.")
-            return 1
-    return 0
+            logging.error("secSignAlg is invalid.")
+            ret = 1
+    return ret
 
 
-def gen_header(content_len, key_version):
-    return struct.pack('IHHII', MAGIC1, MAGIC2, VERSION, content_len, \
-            key_version)
+def gen_header(content_len, key_version, cfg):
+    ''' gen header by endian '''
+    if SING_BIG_ENDIAN:
+        head_tag = '>IHHII'
+    else:
+        head_tag = 'IHHII'
+    return struct.pack(head_tag, MAGIC1, MAGIC2, cfg.ta_version, content_len, key_version)
 
 
 def get_sign_alg(cfg):
@@ -231,7 +248,7 @@ def get_sign_alg(cfg):
         sign_alg = sign_alg | (2 << 20)
     elif cfg.sign_alg == "ECDSA":
         sign_alg = sign_alg | (1 << 20)
-    if cfg.sign_type == '4':
+    if cfg.sign_type == '4' or cfg.sign_type == '5' or cfg.sign_type == '6' :
         sign_alg = sign_alg | 0x0000C000
     else:
         if cfg.sign_key_len == "2048":
@@ -246,9 +263,12 @@ def get_sign_alg(cfg):
 def gen_aes_key_info(cfg):
     iv_data = get_random_bytes(16)
     key_data = get_random_bytes(32)
-
+    if SING_BIG_ENDIAN:
+        aes_tag = '>3I'
+    else:
+        aes_tag = '<3I'
     sign_alg = get_sign_alg(cfg)
-    key_info = struct.pack('<3I', 32, 16, sign_alg)
+    key_info = struct.pack(aes_tag, 32, 16, sign_alg)
     key_info += key_data
     key_info += iv_data
     return key_data, iv_data, key_info
@@ -256,14 +276,17 @@ def gen_aes_key_info(cfg):
 
 def gen_sign_alg_info(cfg, out_file_path):
     sign_alg = get_sign_alg(cfg)
-    print("sign_alg value is 0x%x" % sign_alg)
-
+    logging.critical("sign_alg value is 0x%x", sign_alg)
+    if SING_BIG_ENDIAN:
+        info_tag = '>I'
+    else:
+        info_tag = 'I'
     fd_out = os.open(out_file_path, os.O_WRONLY | os.O_CREAT, \
         stat.S_IWUSR | stat.S_IRUSR)
     out_file = os.fdopen(fd_out, "wb")
-    out_file.write(struct.pack('I', 0))
-    out_file.write(struct.pack('I', 0))
-    out_file.write(struct.pack('I', sign_alg))
+    out_file.write(struct.pack(info_tag, 0))
+    out_file.write(struct.pack(info_tag, 0))
+    out_file.write(struct.pack(info_tag, sign_alg))
     out_file.close()
 
     return
@@ -287,13 +310,13 @@ def encrypt_aes_key(pubkey_path, in_data, out_path):
 def gen_signature(cfg, uuid_str, raw_data, raw_data_path, hash_file_path, \
         out_file_path, out_path, key_info_data):
     gen_ta_signature(cfg, uuid_str, raw_data, raw_data_path, \
-        hash_file_path, out_file_path, out_path, key_info_data)
+        hash_file_path, out_file_path, out_path, key_info_data, SING_BIG_ENDIAN)
     os.chmod(out_file_path, stat.S_IWUSR | stat.S_IRUSR)
     return
 
 
 def gen_raw_data(manifest_data_path, manifest_ext_path, elf_file_path, \
-        config_path, raw_file_path):
+        config_path, raw_file_path, ta_version):
     manifest_size = os.path.getsize(manifest_data_path)
     manifest_ext_size = os.path.getsize(manifest_ext_path)
     elf_size = os.path.getsize(elf_file_path)
@@ -307,7 +330,11 @@ def gen_raw_data(manifest_data_path, manifest_ext_path, elf_file_path, \
     header = ""
     if os.path.isfile(config_path):
         config_size = os.path.getsize(config_path)
-    header = struct.pack('IIIII', TA_VERSION, manifest_size, \
+    if SING_BIG_ENDIAN:
+        raw_tag = '>IIIII'
+    else:
+        raw_tag = 'IIIII'
+    header = struct.pack(raw_tag, ta_version, manifest_size, \
             manifest_ext_size, \
             elf_size, config_size)
     file_op.write(header)
@@ -359,19 +386,19 @@ def parser_api_level(mk_compile_cfg, cmake_compile_cfg):
     elif os.path.exists(cmake_compile_cfg):
         compile_cfg_file = cmake_compile_cfg
     else:
-        print("Build config file doesn't exist, ignore it")
+        logging.error("Build config file doesn't exist, ignore it")
         return default_api_level
 
     with open(compile_cfg_file) as file_op:
         for line in file_op:
-            if line.startswith("#") or not "-DAPI_LEVEL" in line:
+            if line.startswith("#") or "-DAPI_LEVEL" not in line:
                 continue
             key, value = line.strip().split("-DAPI_LEVEL=")
-            print("key info {}".format(key))
-            print(("ta_api_level = {}".format(value[0])))
+            logging.critical("key info %s", key)
+            logging.critical("ta_api_level = %s", value[0])
             return value[0]
 
-    print("Build Config file doesn't define API_LEVEL")
+    logging.error("Build Config file doesn't define API_LEVEL")
     return default_api_level
 
 
@@ -379,7 +406,7 @@ def update_api_level(mk_compile_cfg, cmake_compile_cfg, manifest):
     data = ''
     with open(manifest, 'r') as file_op:
         for line in file_op:
-            if line.startswith("#") or not "gpd.ta.api_level" in line:
+            if line.startswith("#") or "gpd.ta.api_level" not in line:
                 data += line
 
     api_level = parser_api_level(mk_compile_cfg, cmake_compile_cfg)
@@ -396,7 +423,7 @@ def update_otrp_flag(manifest):
     data = ''
     with open(manifest, 'r') as file_op:
         for line in file_op:
-            if line.startswith("#") or not "gpd.ta.otrp_flag" in line:
+            if line.startswith("#") or "gpd.ta.otrp_flag" not in line:
                 data += line
     line = "\ngpd.ta.otrp_flag:{}\n".format('true')
     data += line
@@ -419,14 +446,16 @@ def gen_data_for_sign(header, key_data, raw_file):
 
 
 def gen_key_version(cfg):
-    if cfg.pub_key_len == '3072':
+    if cfg.pub_key_len == '4096':
+        return int(0x0302)
+    elif cfg.pub_key_len == '3072':
         return int(0x0202)
     elif cfg.pub_key_len == '2048':
         return int(0x0002)
     elif cfg.pub_key_len == '':
         return int(0x0000)
 
-    print("unhandled pulic key len %s" % cfg.pub_key_len)
+    logging.error("unhandled pulic key len %s", cfg.pub_key_len)
     raise RuntimeError
 
 
@@ -435,7 +464,7 @@ def pack_signature(signature_path, signature_size):
     with open(signature_path, 'rb+') as signature_file:
         signature_buf = signature_file.read(signature_size)
         signature_file.seek(0)
-        for index in range(0, add_size):
+        for _ in range(0, add_size):
             signature_file.write(b'\x00')
         signature_file.write(signature_buf)
 
@@ -443,13 +472,32 @@ def pack_signature(signature_path, signature_size):
 def check_if_is_drv(manifest_path):
     with open(manifest_path, 'r') as mani_fp:
         for each_line in mani_fp:
-            if each_line.startswith("#") or not len(each_line.strip()):
+            if each_line.startswith("#") or not each_line.strip():
                 continue
             name = each_line.split(":")[0].strip()
             if name == "gpd.ta.target_type" and \
                 str(each_line.split(":")[1].strip()) == "1":
                 return 1
     return 0
+
+
+def get_sign_cert_block_buffer(cfg, signature_path, signature_size):
+    ''' get sign and cert buffer '''
+    with open(signature_path, 'rb') as signature_file:
+        signature_buf = signature_file.read(signature_size)
+    ta_cert_len = 0
+    if cfg.sign_key_type == TYPE_PUBKEY:
+        sign_verify_buf = struct.pack('II', TYPE_PUBKEY, 0) + signature_buf
+    else:
+        ta_cert_path = cfg.ta_cert_chain
+        ta_cert_len = os.path.getsize(ta_cert_path)
+        with open(ta_cert_path, 'rb') as ta_cert_file:
+            ta_cert_buf = ta_cert_file.read(ta_cert_len)
+        if cfg.sign_key_type == TYPE_CERT:
+            sign_verify_buf = struct.pack('II', TYPE_CERT, ta_cert_len) + ta_cert_buf + signature_buf
+        else:
+            sign_verify_buf = struct.pack('II', TYPE_CERT_CHAIN, ta_cert_len) + ta_cert_buf + signature_buf
+    return sign_verify_buf
 
 
 def gen_sec_image(in_path, out_path, cfg):
@@ -476,16 +524,24 @@ def gen_sec_image(in_path, out_path, cfg):
     dyn_conf_xml_file_path = os.path.join(in_path, "dyn_perm.xml")
     tag_parse_dict_file_path = os.path.join(os.getcwd(), "tag_parse_dict.csv")
     xml_config_path = os.path.join(in_path, "configs.xml")
+    auth_xml_file_path = os.path.join(in_path, "auth_config.xml")
+
+    ta_cert_path = cfg.ta_cert_chain
+    if cfg.ta_version == 5:
+        if cfg.sign_key_type == TYPE_PUBKEY:
+            ta_cert_len = 0
+        else:
+            ta_cert_len = os.path.getsize(ta_cert_path)
 
     is_encrypt_sec = True
     if cfg.public_key == "" or cfg.pub_key_len == "":
         is_encrypt_sec = False
 
     # 1. parser_manifest
-    ret, product_name, uuid_str, manifest_txt_exist = \
-            process_manifest_file(xml_config_path, \
-            manifest_path, manifest_data_path, manifest_ext_path)
-    if ret is False:
+    manifest_info = process_manifest_file(xml_config_path, \
+            manifest_path, manifest_data_path, manifest_ext_path, SING_BIG_ENDIAN)
+    uuid_str = manifest_info.uuid_str
+    if manifest_info.ret is False:
         raise RuntimeError
 
     # 2. update_api_level
@@ -493,14 +549,16 @@ def gen_sec_image(in_path, out_path, cfg):
 
     # 3. update_otrp_flag
     if cfg.otrp_flag == "1":
-        print("package otrp sec file\n")
+        logging.critical("package otrp sec file\n")
         update_otrp_flag(manifest_ext_path)
 
     # 4. parser_dyn_conf
     if os.path.exists(dyn_conf_xml_file_path):
-        from dyn_conf_parser import parser_dyn_conf
-        parser_dyn_conf(dyn_conf_xml_file_path, manifest_ext_path, \
-                        tag_parse_dict_file_path, in_path)
+        # V3.1 ta/drv do not need manifest_ext
+        if not os.path.exists(cfg.config_path):
+            from dyn_conf_parser import parser_dyn_conf
+            parser_dyn_conf(dyn_conf_xml_file_path, manifest_ext_path, \
+                            tag_parse_dict_file_path, in_path)
     else:
         if check_if_is_drv(manifest_path) == 1:
             if not os.path.exists(cfg.config_path):
@@ -510,12 +568,21 @@ def gen_sec_image(in_path, out_path, cfg):
                 with os.fdopen(manifest_ext_path_fd, 'a+') as mani_ext_fp:
                     mani_ext_fp.write(ans)
 
+    # parser auth config xml: the auth info must be packed in the end of manifest_ext.
+    if os.path.exists(auth_xml_file_path):
+        from auth_conf_parser import parser_auth_xml
+        parser_auth_xml(auth_xml_file_path, manifest_ext_path, SING_BIG_ENDIAN)
+
     # 5. gen_raw_data
     gen_raw_data(manifest_data_path, manifest_ext_path, elf_file_path, \
-            cfg.config_path, raw_file_path)
+            cfg.config_path, raw_file_path, cfg.ta_version)
 
     if cfg.sign_type == '4':
+        sign_len = 9219
+    elif cfg.sign_type == '5':
         sign_len = 0
+    elif cfg.sign_type == '6':
+        sign_len = 9227
     else:
         if int(cfg.sign_key_len) == 256:
             sign_len = 72
@@ -531,24 +598,34 @@ def gen_sec_image(in_path, out_path, cfg):
         aes_encrypt(key_data, iv_data, raw_file_path, enc_raw_path)
 
         # generate Main Header
-        content_len = os.path.getsize(enc_key_path) \
+        if cfg.ta_version == 5:
+            content_len = os.path.getsize(enc_key_path) \
+                + 4 + 4 + ta_cert_len + sign_len \
+                + os.path.getsize(enc_raw_path)
+        else:
+            content_len = os.path.getsize(enc_key_path) \
                 + sign_len \
                 + os.path.getsize(enc_raw_path)
     else:
         gen_sign_alg_info(cfg, key_info_path)
         # generate Main Header
-        content_len = os.path.getsize(key_info_path) \
+        if cfg.ta_version == 5:
+            content_len = os.path.getsize(key_info_path) \
+                + 4 + 4 + ta_cert_len + sign_len \
+                + os.path.getsize(raw_file_path)
+        else:
+            content_len = os.path.getsize(key_info_path) \
                 + sign_len \
                 + os.path.getsize(raw_file_path)
         with open(key_info_path, 'rb') as key_info_fp:
             key_info_data = key_info_fp.read(os.path.getsize(key_info_path))
 
     key_version = gen_key_version(cfg)
-    header = gen_header(int(content_len), key_version)
+    header = gen_header(int(content_len), key_version, cfg)
     data_for_sign = gen_data_for_sign(header, key_info_data, raw_file_path)
 
     uuid_str = uuid_str[0:36]
-    print('uuid str {}'.format(uuid_str))
+    logging.critical("uuid str %s", uuid_str)
 
     # 7. gen signature
     gen_signature(cfg, uuid_str, data_for_sign, data_for_sign_path, \
@@ -576,9 +653,9 @@ def gen_sec_image(in_path, out_path, cfg):
         content_len = os.path.getsize(key_data_path) \
                 + sign_len \
                 + os.path.getsize(raw_data_path)
-        header = gen_header(int(content_len), key_version)
+        header = gen_header(int(content_len), key_version, cfg)
 
-    sec_img_path = os.path.join(out_path, product_name)
+    sec_img_path = os.path.join(out_path, manifest_info.product_name)
     fd_image = os.open(sec_img_path, os.O_WRONLY | os.O_CREAT, \
         stat.S_IWUSR | stat.S_IRUSR)
     sec_image = os.fdopen(fd_image, "wb")
@@ -594,9 +671,14 @@ def gen_sec_image(in_path, out_path, cfg):
         with open(key_info_path, 'rb') as key_info_fp:
             sec_image.write(key_info_fp.read(key_info_size))
     # write to sec file [3.signature]
-    signature_size = os.path.getsize(signature_path)
-    with open(signature_path, 'rb') as signature_file:
-        sec_image.write(signature_file.read(signature_size))
+    if cfg.ta_version == 5:
+        signature_size = os.path.getsize(signature_path)
+        sign_cert_buf = get_sign_cert_block_buffer(cfg, signature_path, signature_size)
+        sec_image.write(sign_cert_buf)
+    else:
+        signature_size = os.path.getsize(signature_path)
+        with open(signature_path, 'rb') as signature_file:
+            sec_image.write(signature_file.read(signature_size))
     if is_encrypt_sec is True:
         # write to sec file [4.encrypted raw data]
         enc_raw_size = os.path.getsize(enc_raw_path)
@@ -609,12 +691,12 @@ def gen_sec_image(in_path, out_path, cfg):
     sec_image.truncate(int(SEC_HEADER_BYTES) + int(content_len))
     sec_image.close()
 
-    print("=========================SUCCESS============================")
-    print("generate sec(common format) load image success: ")
-    print(sec_img_path)
-    print("============================================================")
+    logging.critical("=========================SUCCESS============================")
+    logging.critical("generate sec(common format) load image success: ")
+    logging.critical(sec_img_path)
+    logging.critical("============================================================")
 
-    if manifest_txt_exist is False and os.path.exists(manifest_path):
+    if manifest_info.manifest_txt_exist is False and os.path.exists(manifest_path):
         os.remove(manifest_path)
 
     #remove temp files
@@ -623,7 +705,8 @@ def gen_sec_image(in_path, out_path, cfg):
 
 
 def main():
-    sign_tool_dir = os.path.dirname(os.path.abspath(__file__))
+    global SING_BIG_ENDIAN
+    sign_tool_dir = os.path.dirname(os.path.realpath(__file__))
     parser = argparse.ArgumentParser()
     parser.add_argument("in_path", help="input path of data to be signed. \
             (libcombine.so; manifest.txt; ...", type=str)
@@ -633,12 +716,14 @@ def main():
         help="sign cfg for ta developer", type=str)
     parser.add_argument("--privateCfg", \
         help="sign cfg for product developer", type=str)
+    parser.add_argument("--sign_endian", \
+        help="sign endian (little/big default little)", type=str)
     args = parser.parse_args()
     cfg = AllCfg()
     if args.privateCfg:
         PrivateCfg(args.privateCfg, cfg)
     else:
-        print("please config private cfg file")
+        logging.error("please config private cfg file")
         raise RuntimeError
 
     if args.publicCfg:
@@ -646,22 +731,25 @@ def main():
     else:
         PublicCfg(args.privateCfg, cfg)
 
+    if args.sign_endian and args.sign_endian == "big":
+        SING_BIG_ENDIAN = True
+
     if check_cfg(cfg):
-        print("the configuration file field is incorrect.")
+        logging.error("the configuration file field is incorrect.")
         exit()
-    in_path = os.path.abspath(args.in_path)
-    out_path = os.path.abspath(args.out_path)
+    in_path = os.path.realpath(args.in_path)
+    out_path = os.path.realpath(args.out_path)
     if not os.path.exists(in_path):
-        print("input_path does not exist.")
+        logging.error("input_path does not exist.")
         exit()
     if not os.path.exists(out_path):
-        print("out_path does not exist.")
+        logging.error("out_path does not exist.")
         exit()
     if whitelist_check(in_path):
-        print("input_path is incorrect.")
+        logging.error("input_path is incorrect.")
         exit()
     if whitelist_check(out_path):
-        print("out_path is incorrect.")
+        logging.error("out_path is incorrect.")
         exit()
     os.chdir(sign_tool_dir)
 

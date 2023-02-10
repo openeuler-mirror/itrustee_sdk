@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Huawei Technologies Co., Ltd. 2012-2019. All rights reserved.
- * iTrustee licensed under the Mulan PSL v2.
+ * Licensed under the Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
  *     http://license.coscl.org.cn/MulanPSL2
@@ -74,6 +74,32 @@ TEE_Result tee_ext_get_caller_info(caller_info *caller_info_data, uint32_t lengt
  * return others failed to add caller info for target CA
  */
 TEE_Result addcaller_ca_exec(const char *ca_name, const char *user_name);
+
+/*
+ * verify TA's caller's identify
+ * TA can call this API to add caller's info,
+ * which is allowed to call this TA.
+ * this API is for CA in form of JAR or binary-excuteble file.
+ *
+ * @param ca_name       [IN]        CA caller's process name
+ * @param user_name     [IN]        CA caller's username
+ *
+ * return TEE_SUCCESS operation
+ * return others failed to add caller info for target CA
+ */
+
+TEE_Result AddCaller_CA_user(const char *ca_name, const char *user_name);
+
+/*
+ * TA can call this API to add caller's info,
+ * which is allowed to call this CA.
+ * this API is for CA in form of native ca and APK.
+ *
+ * @param cainfo_hash [IN] CA callerinfo's sha256 value
+ *
+ * return TEE_SUCCESS operation
+ */
+TEE_Result AddCaller_CA(const uint8_t *cainfo_hash, uint32_t length);
 
 /*
  * TA call this API allow others TA open session with itself

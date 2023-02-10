@@ -78,6 +78,10 @@ enum {
 	TCP_NLA_DSACK_DUPS,
 	TCP_NLA_REORD_SEEN,
 	TCP_NLA_SRTT,
+	TCP_NLA_TIMEOUT_REHASH,
+	TCP_NLA_BYTES_NOTSENT,
+	TCP_NLA_EDT,
+	TCP_NLA_TTL,
 };
 
 #if defined(_GNU_SOURCE) || defined(_BSD_SOURCE)
@@ -181,6 +185,13 @@ struct tcphdr {
 #define TCP_CA_Recovery		3
 #define TCP_CA_Loss		4
 
+enum tcp_fastopen_client_fail {
+	TFO_STATUS_UNSPEC,
+	TFO_COOKIE_UNAVAILABLE,
+	TFO_DATA_NOT_ACKED,
+	TFO_SYN_RETRANSMITTED,
+};
+
 struct tcp_info {
 	uint8_t tcpi_state;
 	uint8_t tcpi_ca_state;
@@ -189,7 +200,7 @@ struct tcp_info {
 	uint8_t tcpi_backoff;
 	uint8_t tcpi_options;
 	uint8_t tcpi_snd_wscale : 4, tcpi_rcv_wscale : 4;
-	uint8_t tcpi_delivery_rate_app_limited : 1;
+	uint8_t tcpi_delivery_rate_app_limited : 1, tcpi_fastopen_client_fail : 2;
 	uint32_t tcpi_rto;
 	uint32_t tcpi_ato;
 	uint32_t tcpi_snd_mss;
@@ -240,14 +251,15 @@ struct tcp_info {
 
 #define TCP_MD5SIG_MAXKEYLEN    80
 
-#define TCP_MD5SIG_FLAG_PREFIX  1
+#define TCP_MD5SIG_FLAG_PREFIX  0x1
+#define TCP_MD5SIG_FLAG_IFINDEX 0x2
 
 struct tcp_md5sig {
 	struct sockaddr_storage tcpm_addr;
 	uint8_t tcpm_flags;
 	uint8_t tcpm_prefixlen;
 	uint16_t tcpm_keylen;
-	uint32_t __tcpm_pad;
+	int tcpm_ifindex;
 	uint8_t tcpm_key[TCP_MD5SIG_MAXKEYLEN];
 };
 
@@ -271,10 +283,21 @@ struct tcp_repair_window {
 	uint32_t rcv_wup;
 };
 
+#define TCP_RECEIVE_ZEROCOPY_FLAG_TLB_CLEAN_HINT 0x1
+
 struct tcp_zerocopy_receive {
 	uint64_t address;
 	uint32_t length;
 	uint32_t recv_skip_hint;
+	uint32_t inq;
+	int32_t err;
+	uint64_t copybuf_address;
+	int32_t copybuf_len;
+	uint32_t flags;
+	uint64_t msg_control;
+	uint64_t msg_controllen;
+	uint32_t msg_flags;
+	uint32_t reserved;
 };
 
 #endif

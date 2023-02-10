@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Huawei Technologies Co., Ltd. 2018-2020. All rights reserved.
- * iTrustee licensed under the Mulan PSL v2.
+ * Licensed under the Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
  *     http://license.coscl.org.cn/MulanPSL2
@@ -14,8 +14,8 @@
 #define __TEE_CORE_API_H
 
 #include "tee_defines.h"
-#ifndef _TEE_TA_SESSION_HANDLE
-#define _TEE_TA_SESSION_HANDLE
+#ifndef TEE_TA_SESSION_HANDLE
+#define TEE_TA_SESSION_HANDLE
 typedef uint32_t TEE_TASessionHandle;
 #endif
 

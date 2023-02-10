@@ -1,6 +1,6 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2013-2020. All rights reserved.
- * iTrustee licensed under the Mulan PSL v2.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2013-2023. All rights reserved.
+ * Licensed under the Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
  *     http://license.coscl.org.cn/MulanPSL2
@@ -59,7 +59,8 @@ enum TEEC_ReturnCode {
     TEEC_ERROR_STORAGE_NO_SPACE  = 0xFFFF3041,  /* used by adapt only */
     TEEC_ERROR_SIGNATURE_INVALID = 0xFFFF3072,  /* used by adapt only */
     TEEC_ERROR_TIME_NOT_SET      = 0xFFFF5000,  /* used by adapt only */
-    TEEC_ERROR_TIME_NEEDS_RESET  = 0xFFFF5001   /* used by adapt only */
+    TEEC_ERROR_TIME_NEEDS_RESET  = 0xFFFF5001,  /* used by adapt only */
+    TEEC_ERROR_IPC_OVERFLOW      = 0xFFFF9114   /* ipc overflow */
 };
 
 enum TEEC_ReturnCodeOrigin {

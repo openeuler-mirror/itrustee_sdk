@@ -10,7 +10,6 @@
  * See the Mulan PSL v2 for more details.
  * Description: CA for certification management.
  */
-
 #ifndef CERT_FILE_H
 #define CERT_FILE_H
 

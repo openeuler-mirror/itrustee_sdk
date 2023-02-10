@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Huawei Technologies Co., Ltd. 2018-2020. All rights reserved.
- * iTrustee licensed under the Mulan PSL v2.
+ * Licensed under the Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
  *     http://license.coscl.org.cn/MulanPSL2
@@ -25,6 +25,7 @@
 #define TEE_MAX_KEY_SIZE_IN_BITS      (1024 * 8)
 #define SW_RSA_KEYLEN                 1024
 #define TEE_DH_MAX_SIZE_OF_OTHER_INFO 64 /* bytes */
+#define TEE_PARAM_COUNT_MAX           9
 
 enum __TEE_Operation_Constants {
     TEE_OPERATION_CIPHER               = 0x1,
@@ -126,6 +127,7 @@ enum __tee_crypto_algorithm_id {
     TEE_ALG_SM2_PKE                      = 0x80000045,
     TEE_ALG_SM3                          = 0x50000007,
     TEE_ALG_SM4_ECB_NOPAD                = 0x10000014,
+    TEE_ALG_SM4_ECB_PKCS7                = 0x10000024,
     TEE_ALG_SM4_CBC_NOPAD                = 0x10000114,
     TEE_ALG_SM4_CBC_PKCS7                = 0xF0000003,
     TEE_ALG_SM4_CTR                      = 0x10000214,
@@ -310,7 +312,7 @@ typedef struct __TEE_ObjectHandle TEE_ObjectHandleVar;
  * @param operation [IN/OUT]  #TEE_OperationHandle
  * @param algorithm [IN]  #TEE_CRYPTO_ALGORITHM_ID
  * @param mode [IN]  #TEE_OperationMode
- * @param maxKeySize [IN]  The max key size
+ * @param max_key_size [IN]  The max key size
  *
  * @return TEE_SUCCESS succss
  * @return TEE_ERROR_OUT_OF_MEMORY #TEE_OperationHandle malloc failed
@@ -318,7 +320,7 @@ typedef struct __TEE_ObjectHandle TEE_ObjectHandleVar;
  * @return TEE_ERROR_GENERIC other failed
  */
 TEE_Result TEE_AllocateOperation(TEE_OperationHandle *operation, uint32_t algorithm, uint32_t mode,
-                                 uint32_t maxKeySize);
+                                 uint32_t max_key_size);
 /*
  * free Operation handle
  *
@@ -374,12 +376,12 @@ TEE_Result TEE_SetOperationKey2(TEE_OperationHandle operation, const TEE_ObjectH
 /*
  * copy src operation to dest operation
  *
- * @param dstOperation [IN/OUT]  #TEE_OperationHandle
- * @param srcOperation [IN/OUT]  #TEE_OperationHandle
+ * @param dst_operation [IN/OUT]  #TEE_OperationHandle
+ * @param src_operation [IN/OUT]  #TEE_OperationHandle
  *
  * @return void
  */
-void TEE_CopyOperation(TEE_OperationHandle dstOperation, const TEE_OperationHandle srcOperation);
+void TEE_CopyOperation(TEE_OperationHandle dst_operation, const TEE_OperationHandle src_operation);
 
 /*
  * init cipher context

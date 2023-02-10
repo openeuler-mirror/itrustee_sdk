@@ -10,7 +10,6 @@
  * See the Mulan PSL v2 for more details.
  * Description: CA for certification management.
  */
-
 #ifndef CERT_COMMON_H
 #define CERT_COMMON_H
 
@@ -19,3 +18,4 @@
 #define MAX_LOG_BUFFER_LEN 10000
 
 #endif
+

@@ -13,8 +13,9 @@ APP_SOURCES += $(ITRUSTEE_BUILD_PATH)/src/CA/libteec_adaptor.c
 APP_CFLAGS += -fstack-protector-strong -fPIC
 
 APP_CFLAGS += -I$(ITRUSTEE_BUILD_PATH)/include/CA \
+	      -I$(ITRUSTEE_BUILD_PATH)/thirdparty/open_source/libboundscheck/include
 
-APP_LDFLAGS += -ldl -lpthread
+APP_LDFLAGS += -ldl -lpthread -lboundscheck
 
 APP_LDFLAGS += -z text -z now -z relro -z noexecstack -pie -s
 
@@ -23,4 +24,4 @@ $(TARGET_APP): $(APP_SOURCES)
 	$(CC) $(APP_CFLAGS) -o $@ $(APP_SOURCES) $(APP_LDFLAGS)
 
 clean:
-	rm -f *.o $(TARGET_APP)
+	@rm -f *.o $(TARGET_APP)

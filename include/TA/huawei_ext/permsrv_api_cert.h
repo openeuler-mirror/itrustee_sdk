@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Huawei Technologies Co., Ltd. 2022-2022. All rights reserved.
- * iTrustee licensed under the Mulan PSL v2.
+ * Licensed under the Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
  *     http://license.coscl.org.cn/MulanPSL2
@@ -11,8 +11,8 @@
  * Description: permsrv cert api interface head file
  */
 
-#ifndef __PERSRV_API_CERT_H__
-#define __PERSRV_API_CERT_H__
+#ifndef PEMRSRV_API_CERT_H
+#define PEMRSRV_API_CERT_H
 
 #include "tee_defines.h"
 

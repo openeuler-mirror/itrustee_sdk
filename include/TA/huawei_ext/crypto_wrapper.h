@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Huawei Technologies Co., Ltd. 2019-2020. All rights reserved.
- * iTrustee licensed under the Mulan PSL v2.
+ * Licensed under the Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
  *     http://license.coscl.org.cn/MulanPSL2
@@ -15,7 +15,6 @@
 
 #include <stdint.h>
 #include <tee_defines.h>
-#include "crypto_aes_wrapper.h"
 #include "crypto_cert_wrapper.h"
 #include "crypto_device_key_wrapper.h"
 #include "crypto_ec_wrapper.h"

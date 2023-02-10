@@ -1,0 +1,7 @@
+<auth_conf>
+    <auth_base_info auth_enable="true" auth_type_uid="false" />
+    <auth_cmdline_username>
+        <item cmdline="/vendor/bin/demo_hello" username="root" />
+        <item cmdline="/vendor/bin/dyn/demo_hello" username="root" />
+    </auth_cmdline_username>
+</auth_conf>

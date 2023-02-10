@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Huawei Technologies Co., Ltd. 2012-2019. All rights reserved.
- * iTrustee licensed under the Mulan PSL v2.
+ * Licensed under the Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
  *     http://license.coscl.org.cn/MulanPSL2
@@ -70,7 +70,7 @@ TEE_Result TEE_GetPropertyAsBool(TEE_PropSetHandle propsetOrEnumerator, const ch
  */
 TEE_Result TEE_GetPropertyAsU32(TEE_PropSetHandle propsetOrEnumerator, const char *name, uint32_t *value);
 
-#if defined(API_LEVEL) && (API_LEVEL >= API_LEVEL1_2)
+#if defined(API_LEVEL) && defined(API_LEVEL1_2) && (API_LEVEL >= API_LEVEL1_2)
 /*
  * retrieves a single property in a property set and converts its value to a 64-bit unsigned integer
  *
@@ -121,7 +121,7 @@ TEE_Result TEE_GetPropertyAsUUID(TEE_PropSetHandle propsetOrEnumerator, const ch
  * @return TEE_SUCCESS operation success
  * @return TEE_ERROR_ITEM_NOT_FOUND cannot find target property
  */
-TEE_Result TEE_GetPropertyAsIdentity(TEE_PropSetHandle propsetOrEnumerator, const char *name, TEE_Identity *value);
+TEE_Result TEE_GetPropertyAsIdentity(TEE_PropSetHandle propsetOrEnumerator, const char *name, TEE_Identity *identity);
 
 /*
  * allocates a property enumerator object

@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Huawei Technologies Co., Ltd. 2022-2022. All rights reserved.
- * licensed under the Mulan PSL v2.
+ * Licensed under the Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
  *     http://license.coscl.org.cn/MulanPSL2
@@ -9,12 +9,11 @@
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
-
 #ifndef LIBQCA_RA_LOG_H
 #define LIBQCA_RA_LOG_H
 
-#define TAG_WARN  "[warn]"
-#define TAG_INFO  "[info]"
+#define TAG_WARN "[warn]"
+#define TAG_INFO "[info]"
 #define TAG_ERROR "[error]"
 #define TAG_DEBUG "[debug]"
 

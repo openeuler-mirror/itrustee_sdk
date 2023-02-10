@@ -7,6 +7,19 @@ SRC += $(wildcard ./src/*.c)
 # set header directory
 INCLUDEDIR += -I./src
 
+# qta need cJSON code, so download it and put it into src
+SRC += ./src/cJSON/cJSON.c
+INCLUDEDIR += -I./src/cJSON/
+
+# if enable daa, so need to download pair_miracl lib
+ifeq ($(ENABLE_DAA_PAIR_MIRACL), true)
+INCLUDEDIR += -I./src/miracl-c
+CFLAGS += -DENABLE_DAA_PAIR_MIRACL
+LDFLFAGS += -lcore -L./src/miracl-c
+SRC += ./src/daa/validate_akcert.c \
+       ./src/daa/daa_structure.c
+endif
+
 # set target
 COBJS := $(SRC:%.c=%.o)
 TARGET = $(COBJS)

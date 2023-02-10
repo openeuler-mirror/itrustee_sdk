@@ -1,6 +1,6 @@
 /*
  * Copyright (c) Huawei Technologies Co., Ltd. 2018-2020. All rights reserved.
- * iTrustee licensed under the Mulan PSL v2.
+ * Licensed under the Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
  *     http://license.coscl.org.cn/MulanPSL2
@@ -13,8 +13,6 @@
 
 #ifndef __TEE_LOG_LEGACY_H__
 #define __TEE_LOG_LEGACY_H__
-
-#include <stdint.h>
 
 void SLog(const char *fmt, ...);
 #endif /* __TEE_LOG_LEGACY_H__ */
