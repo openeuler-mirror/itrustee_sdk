@@ -11,6 +11,12 @@ LIB_SOURCES := src/ra_operate_api.c
 LIB_SOURCES += $(ITRUSTEE_BUILD_PATH)/src/CA/libteec_adaptor.c
 
 LIB_CFLAGS += -Werror -Wall -Wextra -fstack-protector-strong -Wl,-z,relro,-z,now,-z,noexecstack -s -fPIC -D_FORTIFY_SOURCE=2 -O2
+ifeq ($(TARGET_HOST_QCA), y)
+LIB_CFLAGS += -DHOST_QCA
+endif
+ifeq ($(TARGET_CONTAINER_QCA), y)
+LIB_CFLAGS += -DCONTAINER_QCA
+endif
 
 LIB_CFLAGS += -I$(ITRUSTEE_BUILD_PATH)/thirdparty/open_source/libboundscheck/include
 LIB_CFLAGS += -I$(ITRUSTEE_BUILD_PATH)/include/CA

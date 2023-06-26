@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2022-2022. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2022-2023. All rights reserved.
  * Licensed under the Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -20,5 +20,8 @@
 #define PARAMS_RESERVED_SIZE      (0x2000)
 #define OUT_DATA_RESERVED_SIZE    (0x3000)
 #define REMOTE_ATTEST_CMD         (0x1001)
+#ifdef HOST_QCA
+#define REGISTER_CONTAINER_CMD    (0x1002)
+#endif
 
 #endif
