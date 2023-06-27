@@ -13,6 +13,32 @@ include($ENV{ITRUSTEE_BUILD_PATH}/build/cmake/common.cmake)
 set(LIBRARY_OUTPUT_PATH ${CMAKE_CURRENT_SOURCE_DIR})
 set(CURRENT_TARGET_SO "combine")
 
+if ("${TARGET_QTA_REPORT}" STREQUAL "y")
+    # qta-report in container
+    add_definitions(-DCONFIG_QTA_REPORT)
+    set(CONTAINER_INC
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/container/
+    )
+    set(CONTAINER_SRC
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/container/container_verify.c
+    )
+elseif ("${TARGET_HOST_QTA}" STREQUAL "y")
+    # host_qta for container scenario
+    add_definitions(-DCONFIG_HOST_QTA)
+    set(CONTAINER_INC
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/container/
+    )
+    set(CONTAINER_SRC
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/container/container_info.c
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/container/container_verify.c
+    )
+else ()
+    # qta for itrustee(without container)
+    set(CONTAINER_INC "")
+    set(CONTAINER_SRC "")
+endif()
+
+
 # enable check daa pairing using MIRACAL library
 # you should download the opensource library: miracl/core, copy its dir c/ into src/, and compile core.a
 # for instance:
@@ -41,6 +67,7 @@ set(SDK_C_SOURCES
     src/tee_qta.c
     ${CJSON_SRC}
     ${DAA_PAIR_MIRACL_C_SRC}
+    ${CONTAINER_SRC}
 )
 
 set(COMMON_INCLUDES
@@ -48,6 +75,7 @@ set(COMMON_INCLUDES
     ${CMAKE_CURRENT_SOURCE_DIR}/src/.
     ${CJSON_INC}
     ${DAA_PAIR_MIRACL_C_INC}
+    ${CONTAINER_INC}
 )
 
 add_library(${CURRENT_TARGET_SO} SHARED ${SDK_C_SOURCES})
