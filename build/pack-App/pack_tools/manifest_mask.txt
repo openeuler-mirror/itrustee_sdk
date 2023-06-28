@@ -1,0 +1,8 @@
+gpd.ta.appID:   		00000000-0000-0000-0000-000000000000
+gpd.ta.service_name:		APP_NAME
+gpd.ta.singleInstance:		true
+gpd.ta.multiSession: 		false
+gpd.ta.instanceKeepAlive:	false
+gpd.ta.dataSize:		81920
+gpd.ta.stackSize:		8192
+gpd.ta.target_type:     APP_TYPE

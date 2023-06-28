@@ -18,16 +18,6 @@
 #include "tee_crypto_api.h"
 
 /*
- * ta version anti rollback api
- *
- * @param ta_version [IN] version to be checked
- *
- * @return TEE_SUCCESS check result is OK
- * @return others check ta version failed
- */
-TEE_Result TEE_EXT_TA_version_check(uint32_t ta_version);
-
-/*
  * check wheather target TA(uuid) has permission to invoke target command
  * this feature is only supported by TA with certificate
  *
@@ -38,16 +28,6 @@ TEE_Result TEE_EXT_TA_version_check(uint32_t ta_version);
  * @return TEE_ERROR_ACCESS_DENIED target TA don't has permission to invoke target command
  */
 TEE_Result TEE_EXT_CheckInvokePermission(const TEE_UUID *uuid, uint32_t cmd);
-
-/*
- * get sharemem of verify boot information
- *
- * @param buffer [OUT] the address to save verify boot info
- * @param size   [IN] length of buffer
- *
- * @return 0 means success, others means failed
- */
-TEE_Result TEE_EXT_GetVerifyBootInfo(char *buffer, uint32_t size);
 
 /*
  * derive key from device rootkey and UUID of the current task
@@ -64,19 +44,6 @@ TEE_Result TEE_EXT_GetVerifyBootInfo(char *buffer, uint32_t size);
 TEE_Result TEE_EXT_DeriveTARootKey(const uint8_t *salt, uint32_t size, uint8_t *key, uint32_t key_size);
 
 /*
- * get rot key for multiple platforms
- *
- * @param enc_key     [IN] encrypted rot key or NULL
- * @param en_key_size [IN] encrypted rot key buff len or zero
- * @param key         [OUT]rot key buff pointer
- * @param key_size    [IN/OUT] rot key buffer length
- *
- * @return 0 get rot key success
- * @return -1 get rot key failed
- */
-int32_t TEE_EXT_GetRoT(const uint8_t *enc_key, uint32_t en_key_size, uint8_t *key, uint32_t *key_size);
-
-/*
  * get device unique id in TEE
  *
  * @param device_unique_id [OUT] buffer to store the result
@@ -86,36 +53,6 @@ int32_t TEE_EXT_GetRoT(const uint8_t *enc_key, uint32_t en_key_size, uint8_t *ke
  * return others operation failed
  */
 TEE_Result TEE_EXT_GetDeviceUniqueId(uint8_t *device_unique_id, uint32_t *length);
-
-TEE_Result TEE_EXT_GetSeCapability(const TEE_UUID *uuid, uint64_t *result);
-
-/*
- * @ingroup TEE_EXT_API
- * @brief   get shared memory infomation of SecFlash
- *
- * @param buffer [OUT] the address to save SecFlash shared memory info
- * @param length [IN]  length of buffer
- *
- * @retval NA
- */
-TEE_Result TEE_EXT_GetSecFlashShareMem(char *buffer, uint32_t size);
-
-/*
- * @ingroup  share memory
- * @brief  get sharemem of verify boot information
- *
- * @par
- * @param buffer [OUT] the address to save verify boot info
- * @param size [IN] length of buffer
- *
- * @retval NA
- *
- * @par dependence:
- * @li tee_ext_api.h
- * @see
- * @since V100R008C00
- */
-TEE_Result TEE_EXT_GetTrustBootImgInfo(char *buffer, uint32_t size);
 
 /*
  * @ingroup  derive key for keymaster
@@ -233,16 +170,6 @@ TEE_Result TEE_EXT_HwiMsgDeregister(uint32_t hwi);
  * @retval received message id
  */
 uint32_t TEE_EXT_HwiMsgWait(void);
-
-/*
- * @ingroup TEE_HW_EXT_API
- * @brief check wheather device rooted 1:rooted, 0:unrooted
- *
- * @param NULL
- *
- * @retval true means device is rooted
- */
-bool TEE_EXT_IsDeviceRooted(void);
 
 #ifdef __cplusplus
 #if __cplusplus

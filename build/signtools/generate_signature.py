@@ -23,7 +23,7 @@ from generate_hash import gen_hash
 
 
 def gen_ta_signature(cfg, uuid_str, raw_data, raw_data_path, hash_file_path, \
-    out_file_path, out_path, key_info_data, is_big_ending):
+    out_file_path, out_path, key_info_data, is_big_ending, temp_path):
     msg_file = os.path.join(out_path, "temp", "config_msg")
     fd_msg = os.open(msg_file, os.O_WRONLY | os.O_CREAT, \
         stat.S_IWUSR | stat.S_IRUSR)

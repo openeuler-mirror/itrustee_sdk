@@ -24,6 +24,15 @@ import sys
 import hashlib
 import struct
 import logging
+import re
+from base64 import urlsafe_b64encode
+
+
+def whitelist_check(intput_str):
+    """ check str """
+    if not re.match(r"^[A-Za-z0-9\/\-_.]+$", intput_str):
+        return 1
+    return 0
 
 
 def elf_header_verify_check(elf_header):
@@ -179,8 +188,13 @@ class ElfInfo:
         self.exec_flag        = 0x1
 
 
-def get_code_segment_from_elf(elf_file_name, out_hash_file_name, sign_data):
-    """ verify ELF header information """
+def base64url_encode(data):
+    """ encode data with base64Url """
+    return urlsafe_b64encode(data).rstrip(b'=')
+
+
+def calculate_mem_hash(elf_file_name):
+    """ calculate mem hash summary """
     hash_value_summary = ""
     elf_info = ElfInfo()
 
@@ -209,7 +223,6 @@ def get_code_segment_from_elf(elf_file_name, out_hash_file_name, sign_data):
                 logging.error("No Support ELFINFO_CLASS")
 
             if (elf_phd_header.p_type != elf_info.load_type) or \
-               (elf_phd_header.p_flags & elf_info.exec_flag != elf_info.exec_flag) or \
                (elf_phd_header.p_flags & elf_info.write_flag == elf_info.write_flag):
                 continue
 
@@ -222,7 +235,7 @@ def get_code_segment_from_elf(elf_file_name, out_hash_file_name, sign_data):
                 alignment_len = (len(elf_segment_buf) // 4096 + 1) * 4096
             elf_segment_buf = elf_segment_buf.ljust(alignment_len, b'\0')
             # get hash from segment buf
-            hash_value_summary = hash_value_summary + generate_sha256_hash_hex(elf_segment_buf)
+            hash_value_summary = generate_sha256_hash_hex(elf_segment_buf) + hash_value_summary
 
             # move the read pointer of the file to the original position.
             if elf_ident.ei_class == elf_info.elfinfo_class_64:
@@ -231,15 +244,53 @@ def get_code_segment_from_elf(elf_file_name, out_hash_file_name, sign_data):
                 elf_fp.seek((i_phd + 1) * elf_info.elf32_phdr_size + elf_info.elf32_hdr_size)
 
         elf_fp.seek(0)
-        with os.fdopen(os.open('hash_{}.txt'.format(out_hash_file_name), os.O_RDWR | os.O_CREAT, 0o755), \
+        return hash_value_summary
+
+
+def check_if_pack_app(elf_file_name, sign_data, out_hash_file_name, out_hash_file_path):
+    """ check if app files """
+    if "pack-App" in elf_file_name:
+        out_path = os.path.join(out_hash_file_path, 'hash_{}.txt'.format(out_hash_file_name))
+        with os.fdopen(os.open(out_path, os.O_RDWR | os.O_CREAT, 0o755), \
                        "w+", 0o755) as file_ob:
-            file_ob.write("mem_hash : {}\n".format(generate_sha256_hash_hex(bytes.fromhex(hash_value_summary))))
-            file_ob.write("img_hash : {}".format(generate_sha256_hash_hex(sign_data)))
+            with os.fdopen(os.open(elf_file_name, os.O_RDWR | os.O_CREAT, 0o755), \
+                           "rb", 0o755) as tgz_file:
+                tgz_file_data = tgz_file.read(os.path.getsize(elf_file_name))
+            mem_hash = generate_sha256_hash_hex(tgz_file_data)
+            img_hash = generate_sha256_hash_hex(sign_data)
+            file_ob.write("mem_hash : {}\n".format(mem_hash))
+            file_ob.write("img_hash : {}\n".format(img_hash))
+            file_ob.write("mem_hash_base64url : {}\n".format(base64url_encode(bytes.fromhex(mem_hash)).decode('utf-8')))
+            file_ob.write("img_hash_base64url : {}".format(base64url_encode(bytes.fromhex(img_hash)).decode('utf-8')))
+        return True
+
+    return False
+
+
+def get_code_segment_from_elf(elf_file_name, sign_data, out_hash_file_name, out_hash_file_path):
+    """ verify ELF header information """
+    if whitelist_check(elf_file_name):
+        logging.error("file name is incorrect.")
+        return
+
+    if check_if_pack_app(elf_file_name, sign_data, out_hash_file_name, out_hash_file_path) is True:
+        return
+
+    hash_value_summary = calculate_mem_hash(elf_file_name)
+    out_path = os.path.join(out_hash_file_path, 'hash_{}.txt'.format(out_hash_file_name))
+    mem_hash = generate_sha256_hash_hex(bytes.fromhex(hash_value_summary))
+    img_hash = generate_sha256_hash_hex(sign_data)
+
+    with os.fdopen(os.open(out_path, os.O_RDWR | os.O_CREAT, 0o755), "w+", 0o755) as file_ob:
+        file_ob.write("mem_hash : {}\n".format(mem_hash))
+        file_ob.write("img_hash : {}\n".format(img_hash))
+        file_ob.write("mem_hash_base64url : {}\n".format(base64url_encode(bytes.fromhex(mem_hash)).decode('utf-8')))
+        file_ob.write("img_hash_base64url : {}".format(base64url_encode(bytes.fromhex(img_hash)).decode('utf-8')))
 
 
 def main():
     """ main function """
-    get_code_segment_from_elf(sys.argv[1], "test", sys.argv[3])
+    get_code_segment_from_elf(sys.argv[1], "test", sys.argv[3], sys.argv[4])
 
 
 if __name__ == '__main__':

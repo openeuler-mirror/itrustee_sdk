@@ -23,6 +23,7 @@ from dyn_conf_checker import dyn_perm_check
 from dyn_conf_checker import check_and_classify_attr
 from dyn_conf_checker import check_csv_sym
 from dyn_conf_checker import check_ta_config
+from dyn_conf_checker import dyn_conf_clean
 
 
 type_trans = {"TYPE_NONE": "-1",
@@ -33,6 +34,9 @@ type_trans = {"TYPE_NONE": "-1",
 
 # the length len in tlv
 DYN_CONF_LEN_LEN = 4
+
+# the map_regions num
+MAP_REGIONS_NUM = 0
 
 tag_dict = {}
 type_dict = {}
@@ -218,8 +222,15 @@ def get_length(value):
     return ans
 
 
-def do_parser_dyn_conf(old_item, ele, in_path):
+def check_map_regions(length):
+    ''' check the regions strion length '''
+    if int(length, 16) > 1279:
+        logging.error("regions string is too long\n")
+        raise RuntimeError("regions has invalid length", int(length, 16))
 
+
+def do_parser_dyn_conf(old_item, ele, in_path):
+    ''' parse dyn config to tlv '''
     attrs = ""
     if len(ele.attrib) > 0:
         for attr in ele.attrib:
@@ -234,6 +245,11 @@ def do_parser_dyn_conf(old_item, ele, in_path):
                              ele.attrib, in_path)
             length = get_length(value)
             attrs = attrs + tag + dyn_type + length + value
+            if tag == "037" and dyn_type == "3":
+                check_map_regions(length)
+                # the map_regions num
+                global MAP_REGIONS_NUM
+                MAP_REGIONS_NUM += 1
     else:
         for child in ele:
             tmp_attrs = do_parser_dyn_conf(old_item + child.tag + "/",
@@ -273,6 +289,10 @@ def parser_dyn_conf(dyn_conf_xml_file_path, manifest_ext_path,
     root = tree.getroot()
 
     ans = do_parser_dyn_conf(root.tag + "/", root, in_path)
+    dyn_conf_clean()
+    if MAP_REGIONS_NUM > 1:
+        raise RuntimeError("regions has invalid num", MAP_REGIONS_NUM)
+
     if ans == "":
         ans = "00000"
 
@@ -306,6 +326,7 @@ def parser_config_xml(config_xml_file_path, tag_parse_dict_path, \
     root = tree.getroot()
 
     ans = do_parser_dyn_conf(root.tag + "/", root, in_path)
+    dyn_conf_clean()
     if ans == "":
         ans = "00000"
 

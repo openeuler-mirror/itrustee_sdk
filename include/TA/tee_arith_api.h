@@ -284,8 +284,8 @@ void TEE_BigIntSquare(TEE_BigInt *dest, const TEE_BigInt *op);
  * computes dest_r and dest_q such that op1 = dest_q * op2 + dest_r
  *
  * @param dest_q [OUT] Pointer to a TEE_BigInt to store the quotient
- * @param dest_r [IN] Pointer to a TEE_BigInt to store the remainder
- * @param op1 [OUT] Pointer to the first operand, the dividend
+ * @param dest_r [OUT] Pointer to a TEE_BigInt to store the remainder
+ * @param op1 [IN] Pointer to the first operand, the dividend
  * @param op2 [IN] Pointer to the second operand, the divisor
  *
  * @return #TEE_SUCCESS operation success

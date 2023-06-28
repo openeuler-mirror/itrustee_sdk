@@ -27,6 +27,8 @@ PRODUCT_DYN_LIB = 2
 PRODUCT_SERVICE_IMAGE = 3
 PRODUCT_CLIENT_IMAGE = 4
 PRODUCT_DRIVER_IMAGE = 5
+PRODUCT_PYTHON_IMAGE = 6
+PRODUCT_JAVA_IMAGE = 7
 
 
 class PackUuid:
@@ -327,6 +329,20 @@ def parser_manifest(manifest, manifest_data_path, mani_ext, big_endian=False):
             logging.error("drv's name only can use \
                            [A-Z] [a-z] [0-9] and '_'")
             return (False, 0, 0)
+    if dyn_conf_target_type == 6:
+        max_service_len = 32
+        target_type = PRODUCT_PYTHON_IMAGE
+        if not re.match(r"^[A-Za-z0-9_]*$", service_name):
+            logging.error("python dir's name only can use \
+                           [A-Z] [a-z] [0-9] and '_'")
+            return (False, 0, 0)
+    if dyn_conf_target_type == 7:
+        max_service_len = 32
+        target_type = PRODUCT_JAVA_IMAGE
+        if not re.match(r"^[A-Za-z0-9_]*$", service_name):
+            logging.error("python dir's name only can use \
+                           [A-Z] [a-z] [0-9] and '_'")
+            return (False, 0, 0)
 
     if service_name_len > max_service_len:
         logging.error("service name len cannot larger than %s", str(max_service_len))
@@ -378,6 +394,9 @@ def parser_manifest(manifest, manifest_data_path, mani_ext, big_endian=False):
     elif target_type == PRODUCT_DYN_LIB:
         logging.critical("product type is dyn lib")
         product_name = "".join([uuid_str, service_name, ".so.sec"])
+    elif target_type == PRODUCT_PYTHON_IMAGE or target_type == PRODUCT_JAVA_IMAGE:
+        logging.critical("product type is python or java packing")
+        product_name = "".join([service_name, ".sec"])
     else:
         logging.error("invalid product type!")
         return (False, 0, 0)

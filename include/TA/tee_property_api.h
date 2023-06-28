@@ -70,7 +70,6 @@ TEE_Result TEE_GetPropertyAsBool(TEE_PropSetHandle propsetOrEnumerator, const ch
  */
 TEE_Result TEE_GetPropertyAsU32(TEE_PropSetHandle propsetOrEnumerator, const char *name, uint32_t *value);
 
-#if defined(API_LEVEL) && defined(API_LEVEL1_2) && (API_LEVEL >= API_LEVEL1_2)
 /*
  * retrieves a single property in a property set and converts its value to a 64-bit unsigned integer
  *
@@ -82,7 +81,6 @@ TEE_Result TEE_GetPropertyAsU32(TEE_PropSetHandle propsetOrEnumerator, const cha
  * @return TEE_ERROR_ITEM_NOT_FOUND cannot find target property
  */
 TEE_Result TEE_GetPropertyAsU64(TEE_PropSetHandle propsetOrEnumerator, const char *name, uint64_t *value);
-#endif // API_LEVEL
 
 /*
  * retrieves an individual property and converts its value into a binary block

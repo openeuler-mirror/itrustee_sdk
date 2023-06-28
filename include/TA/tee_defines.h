@@ -149,6 +149,13 @@ enum TEE_ObjectAttribute {
     TEE_ATTR_PBKDF2_HMAC_PASSWORD  = 0xD0000133,
     TEE_ATTR_PBKDF2_HMAC_SALT      = 0xD0000134,
     TEE_ATTR_PBKDF2_HMAC_DIGEST    = 0xF0000135,
+    TEE_ATTR_PRF_LABEL             = 0xD0000136,
+    TEE_ATTR_PRF_SEED              = 0xD0000137,
+    TEE_ATTR_PRF_HASH_ALGORITHM    = 0xF0000138,
+    TEE_ATTR_HKDF_SALT             = 0xD0000946,
+    TEE_ATTR_HKDF_INFO             = 0xD0000A46,
+    TEE_ATTR_HKDF_HASH_ALGORITHM   = 0xF0000B46,
+    TEE_ATTR_KDF_KEY_SIZE          = 0xF0000C46,
 };
 
 enum TEE_ObjectType {
@@ -187,6 +194,8 @@ enum TEE_ObjectType {
     TEE_TYPE_SM4                = 0xA0000014,
     TEE_TYPE_SIP_HASH           = 0xF0000002,
     TEE_TYPE_PBKDF2_HMAC        = 0xF0000004,
+    TEE_TYPE_HKDF               = 0xA000004A,
+    TEE_TYPE_PRF                = 0xF0000005,
 
     TEE_TYPE_CORRUPTED_OBJECT = 0xA00000BE,
 };
@@ -235,6 +244,9 @@ enum TEE_Result_Value {
     TEE_ERROR_STORAGE_EROFS                 = 0x80001007, /* stroage section is read only                           */
     TEE_ERROR_STORAGE_PATH_WRONG            = 0x8000100A, /* File path error                                        */
     TEE_ERROR_MSG_QUEUE_OVERFLOW            = 0x8000100B, /* sevice msg queue overflow                              */
+    TEE_ERROR_SUBTHREAD_ACCESS              = 0x8000100C, /* The subthread created by TA cannot access the service  */
+    TEE_ERROR_ORIGIN_PARTITION_INACTIVE     = 0x8000100D, /* Enable backup feature, original partition is inactive  */
+    TEE_ERROR_BACKUP_PARTITION_INACTIVE     = 0x8000100E, /* Enable backup feature, backup partition is inactive    */
     TEE_ERROR_CORRUPT_OBJECT                = 0xF0100001, /* file object has been damaged                           */
     TEE_ERROR_STORAGE_NOT_AVAILABLE         = 0xF0100003, /* storage section is unavailable                         */
     TEE_ERROR_CIPHERTEXT_INVALID            = 0xF0100006, /* cipher text is incorrect                               */
@@ -316,7 +328,8 @@ enum TEE_Result_Value {
     TEE_ERROR_ANTIROOT_INVOKE_ERROR         = 0xFFFF9111, /* AntiRoot ERROR during invokecmd                        */
     TEE_ERROR_AUDIT_FAIL                    = 0xFFFF9112, /* audit failed                                           */
     TEE_FAIL2                               = 0xFFFF9113, /* unused                                                 */
-    TEE_ERROR_IPC_OVERFLOW                  = 0xFFFF9114  /* IPC Channel overflow error                             */
+    TEE_ERROR_IPC_OVERFLOW                  = 0xFFFF9114, /* IPC Channel overflow error                             */
+    TEE_ERROR_APM                           = 0xFFFF9115, /* APM error                                              */
 };
 
 /*

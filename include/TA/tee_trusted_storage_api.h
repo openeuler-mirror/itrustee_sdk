@@ -78,12 +78,14 @@ enum Data_Flag_Constants {
     TEE_DATA_FLAG_CREATE = 0x00000200,
     /*
      * Protect an existing file with the same name. If the file with the same name does not exist,
-     * create a new data file; if the file with the same name exists, an error will be reported
+     * create a new data file; if the file with the same name exists, an error will be reported.
+     * Used in GP v1.1, deprecated in GP v1.2
      */
     TEE_DATA_FLAG_EXCLUSIVE = 0x00000400,
     /*
      * Protect an existing file with the same name. If the file with the same name does not exist,
-     * create a new data file; if the file with the same name exists, an error will be reported
+     * create a new data file; if the file with the same name exists, an error will be reported.
+     * Used in GP v1.2
      */
     TEE_DATA_FLAG_OVERWRITE = 0x00000400,
     /*
@@ -119,7 +121,7 @@ enum Data_Flag_Constants {
  * @return TEE_ERROR_OUT_OF_MEMORY  Insufficient memory to complete the operation
  * @return TEE_ERROR_STORAGE_NO_SPACE  There is not enough space to create the object
  */
-TEE_Result TEE_CreatePersistentObject(uint32_t storageID, const void *ojbectID, size_t objectIDLen, uint32_t flags,
+TEE_Result TEE_CreatePersistentObject(uint32_t storageID, const void *objectID, size_t objectIDLen, uint32_t flags,
                                       TEE_ObjectHandle attributes, const void *initialData, size_t initialDataLen,
                                       TEE_ObjectHandle *object);
 
@@ -140,7 +142,7 @@ TEE_Result TEE_CreatePersistentObject(uint32_t storageID, const void *ojbectID, 
  * @return TEE_ERROR_ACCESS_CONFLICT  Access conflict
  * @return TEE_ERROR_OUT_OF_MEMORY  Insufficient memory to complete the operation
  */
-TEE_Result TEE_OpenPersistentObject(uint32_t storageID, const void *ojbectID, size_t objectIDLen, uint32_t flags,
+TEE_Result TEE_OpenPersistentObject(uint32_t storageID, const void *objectID, size_t objectIDLen, uint32_t flags,
                                     TEE_ObjectHandle *object);
 
 /*
@@ -155,7 +157,7 @@ TEE_Result TEE_OpenPersistentObject(uint32_t storageID, const void *ojbectID, si
  * @return TEE_SUCCESS  Indicates that the function was executed successfully
  * @return TEE_ERROR_OUT_OF_MEMORY  Insufficient memory to complete the operation
  */
-TEE_Result TEE_ReadObjectData(TEE_ObjectHandle ojbect, void *buffer, size_t size, uint32_t *count);
+TEE_Result TEE_ReadObjectData(TEE_ObjectHandle object, void *buffer, size_t size, uint32_t *count);
 
 /*
  * Write size bytes of data from the buffer to the data stream of the object.
@@ -169,7 +171,7 @@ TEE_Result TEE_ReadObjectData(TEE_ObjectHandle ojbect, void *buffer, size_t size
  * @return TEE_ERROR_OUT_OF_MEMORY  Insufficient memory to complete the operation
  * @return TEE_ERROR_STORAGE_NO_SPACE  There is not enough space to perform the operation
  */
-TEE_Result TEE_WriteObjectData(TEE_ObjectHandle ojbect, const void *buffer, size_t size);
+TEE_Result TEE_WriteObjectData(TEE_ObjectHandle object, const void *buffer, size_t size);
 
 /*
  * This function changes the size of the data stream. If the size is smaller than the size of

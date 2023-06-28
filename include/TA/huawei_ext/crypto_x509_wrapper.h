@@ -73,10 +73,10 @@ int32_t import_pub_from_sp(void *pub, const uint8_t *in, uint32_t inlen);
 int32_t get_subject_public_key(uint8_t *pub, const uint8_t *cert, uint32_t cert_len);
 
 /*
- * Get public key from certificate.
+ * Get public key from certificate, with pub buffer size check.
  *
  * @param pub      [OUT]    The public key buffer
- * @param pub_size [IN/OUT] The length of public key buffer
+ * @param pub_size [IN]     The length of public key buffer
  * @param cert     [IN]     The certificate buffer
  * @param cert_len [IN]     The length of certificate buffer
  *
@@ -88,12 +88,12 @@ int32_t get_subject_public_key_new(uint8_t *pub, uint32_t pub_size, const uint8_
 /*
  * Get valid date from certificate.
  *
- * @param vd       [OUT] The valid date structure
+ * @param vd       [OUT] The valid data structure
  * @param cert     [IN]  The certificate buffer
  * @param cert_len [IN]  The length of certificate buffer
  *
  * @return  0: Get valid date success
- * @return -1: Get valid date failed
+ * @return -1: Get valid data failed
  */
 int32_t get_validity_from_cert(validity_period_t *vd, uint8_t *cert, uint32_t cert_len);
 
@@ -101,7 +101,7 @@ int32_t get_validity_from_cert(validity_period_t *vd, uint8_t *cert, uint32_t ce
  * Get common name from certificate.
  *
  * @param name      [OUT]    The common name buffer
- * @param name_size [IN/OUT] The length of common name buffer
+ * @param name_size [IN]     The length of common name buffer
  * @param cert      [IN]     The certificate buffer
  * @param cert_len  [IN]     The length of certificate buffer
  *
@@ -114,7 +114,7 @@ int32_t get_subject_x509_cn(uint8_t *name, uint32_t name_size, const uint8_t *ce
  * Get organization name from certificate.
  *
  * @param name      [OUT]    The organization name buffer
- * @param name_size [IN/OUT] The length of organization name buffer
+ * @param name_size [IN]     The length of organization name buffer
  * @param cert      [IN]     The certificate buffer
  * @param cert_len  [IN]     The length of certificate buffer
  *
@@ -127,7 +127,7 @@ int32_t get_subject_x509_ou(uint8_t *name, uint32_t name_size, const uint8_t *ce
  * Get serial number from certificate.
  *
  * @param serial_number      [OUT]    The serial number buffer
- * @param serial_number_size [IN/OUT] The length of serial number buffer
+ * @param serial_number_size [IN]     The length of serial number buffer
  * @param cert               [IN]     The certificate buffer
  * @param cert_len           [IN]     The length of certificate buffer
  *
@@ -141,7 +141,7 @@ int32_t get_serial_number_from_cert(uint8_t *serial_number, uint32_t serial_numb
  * Get issuer from certificate.
  *
  * @param issuer      [OUT]    The issuer buffer
- * @param issuer_size [IN/OUT] The length of issuer buffer
+ * @param issuer_size [IN]     The length of issuer buffer
  * @param cert        [IN]     The certificate buffer
  * @param cert_len    [IN]     The length of certificate buffer
  *
@@ -163,7 +163,7 @@ int32_t get_issuer_from_cert(uint8_t *issuer, uint32_t issuer_size, uint8_t *crl
  * @return -1: failed
  * @return >0: check success
  */
-int x509_cert_chain_validate(uint8_t *root_cert, uint32_t root_cert_len,
-                             uint8_t *second_cert, uint32_t second_cert_len,
-                             uint8_t *leaf_cert, uint32_t leaf_cert_len);
+int x509_cert_chain_validate(const uint8_t *root_cert, uint32_t root_cert_len,
+                             const uint8_t *second_cert, uint32_t second_cert_len,
+                             const uint8_t *leaf_cert, uint32_t leaf_cert_len);
 #endif

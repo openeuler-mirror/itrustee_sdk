@@ -205,7 +205,7 @@ void TEE_InitValueAttribute(TEE_Attribute *attr, uint32_t attributeID, uint32_t 
  * which is equivalent to copying the TEE_Attribute of srcobject to destobject
  *
  * @attention The TEE_Attribute type and number of the two objects must match
- * @param destObject [IN]  The uninitialized TEE_ObjectHandle to be assigned
+ * @param destObject [OUT]  The uninitialized TEE_ObjectHandle to be assigned
  * @param srcObject [IN]  The initialized TEE_ObjectHandle is used to assign a value to another object
  *
  * @return void
@@ -215,7 +215,7 @@ void TEE_CopyObjectAttributes(TEE_ObjectHandle destObject, TEE_ObjectHandle srcO
 /*
  * This function generates a random key or key-pair and assigns it to the transient object
  *
- * @param object [IN]  Transient object, used to store the generated key
+ * @param object [IN/OUT]  Transient object, used to store the generated key
  * @param keySize [IN]  The bytes of the required key
  * @param params [IN]  Parameters required for key generation
  * @param paramCount [IN]  The number of parameters required to generate the key
@@ -258,7 +258,7 @@ TEE_Result TEE_GetObjectInfo1(TEE_ObjectHandle object, TEE_ObjectInfo *objectInf
  * which is equivalent to copying the TEE_Attribute of srcobject to destobject
  *
  * @attention The TEE_Attribute type and number of the two objects must match
- * @param destObject [IN]  The uninitialized TEE_ObjectHandle to be assigned
+ * @param destObject [IN/OUT]  The uninitialized TEE_ObjectHandle to be assigned
  * @param srcObject [IN]  The initialized TEE_ObjectHandle is used to assign a value to another object
  *
  * @return TEE_SUCCESS  Indicates that the function was executed successfully
@@ -275,7 +275,7 @@ TEE_Result TEE_CopyObjectAttributes1(TEE_ObjectHandle destObject, TEE_ObjectHand
  *
  * @attention The newly created object will contain all Usage_Constants, and the usage flag can
  * only be cleared, not set
- * @param object [IN] Need to restrict TEE_ObjectHandle
+ * @param object [IN/OUT] Need to restrict TEE_ObjectHandle
  * @param objectUsage [IN] ObjectUsage users want to change
  *
  * @return TEE_SUCCESS  Indicates that the function was executed successfully
