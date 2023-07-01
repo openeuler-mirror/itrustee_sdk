@@ -9,6 +9,7 @@
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
+
 #ifndef HOST_QTA_DLIST_H
 #define HOST_QTA_DLIST_H
 
@@ -47,6 +48,7 @@ static inline void dlist_init(struct dlist_node *head)
 static inline void dlist_insert(struct dlist_node *pos, struct dlist_node *node)
 {
     struct dlist_node *tmp = NULL;
+
     tmp        = pos->next;
     tmp->prev  = node;
     node->prev = pos;

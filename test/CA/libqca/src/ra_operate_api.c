@@ -169,7 +169,7 @@ static TEEC_Result container_info_ops(struct ra_buffer_data *info, uint32_t cmd,
         TEEC_NONE, TEEC_NONE);
 
     TEEC_SharedMemory shared_info;
-    (void)memset_s(&shared_info, sizeof(shared_info), 0 ,sizeof(shared_info));
+    (void)memset_s(&shared_info, sizeof(shared_info), 0, sizeof(shared_info));
     shared_info.size = info->size;
     shared_info.flags = TEEC_MEM_INPUT;
     TEEC_Result result = TEEC_AllocateSharedMemory(context, &shared_info);

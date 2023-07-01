@@ -23,20 +23,20 @@
 #define PARAM_NUM 4
 
 #ifdef CONFIG_QTA_REPORT
-#define TEE_QTA_UUID                                        \
-    {                                                       \
-        0xe08f7eca, 0xe875, 0x440e,                         \
-        {                                                   \
-            0x9a, 0xb0, 0x5f, 0x38, 0x11, 0x36, 0xc6, 0x00  \
-        }                                                   \
+#define TEE_QTA_UUID                                       \
+    {                                                      \
+        0xe08f7eca, 0xe875, 0x440e,                        \
+        {                                                  \
+            0x9a, 0xb0, 0x5f, 0x38, 0x11, 0x36, 0xc6, 0x00 \
+        }                                                  \
     }
 #else
-#define TEE_QTA_REPORT_UUID                                 \
-    {                                                       \
-        0x4f84c0e0, 0x4c3f, 0x422f,                         \
-        {                                                   \
-            0x97, 0xdc, 0x14, 0xbf, 0xa2, 0x31, 0x4a, 0xd1  \
-        }                                                   \
+#define TEE_QTA_REPORT_UUID                                \
+    {                                                      \
+        0x4f84c0e0, 0x4c3f, 0x422f,                        \
+        {                                                  \
+            0x97, 0xdc, 0x14, 0xbf, 0xa2, 0x31, 0x4a, 0xd1 \
+        }                                                  \
     }
 #endif
 

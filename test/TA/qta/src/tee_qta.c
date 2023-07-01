@@ -18,9 +18,10 @@
 #ifdef CONFIG_HOST_QTA
 #include "container_info.h"
 #endif
-#if defined(CONFIG_QTA_REPORT) || defined (CONFIG_HOST_QTA)
+#if defined(CONFIG_QTA_REPORT) || defined(CONFIG_HOST_QTA)
 #include "container_verify.h"
 #endif
+
 #ifdef ENABLE_DAA_PAIR_MIRACL
 #include "daa/validate_akcert.h"
 #endif
@@ -335,13 +336,13 @@ static TEE_Result remote_attest(struct ra_buffer_data *in, struct ra_buffer_data
         return TEE_ERROR_BAD_PARAMETERS;
     }
     if (is_report_request(json)) {
-    #ifdef CONFIG_QTA_REPORT
+#ifdef CONFIG_QTA_REPORT
         result = verify_container_info(json);
         if (result != TEE_SUCCESS) {
             tloge("verify container info failed\n");
             goto clear;
         }
-    #endif
+#endif
         result = insert_request_uuid(json, "");
         if (result != TEE_SUCCESS) {
             tloge("insert request uuid failed\n");
