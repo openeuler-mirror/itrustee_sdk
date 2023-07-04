@@ -2,10 +2,7 @@
 obj-m := tee_upgrade.o
 tee_upgrade-objs := upgrade.o
 
-CUR_DIR=$(shell pwd)
-ITRUSTEE_BUILD_PATH=${CUR_DIR}/../../../
-
-EXTRA_CFLAGS += -I$(ITRUSTEE_BUILD_PATH)/thirdparty/open_source/libboundscheck/include
+EXTRA_CFLAGS += -I$(PWD)/../../../thirdparty/open_source/libboundscheck/include
 
 KPATH	:= /usr/src/kernels
 KDIR	:= $(KPATH)/$(shell ls $(KPATH))
