@@ -2,6 +2,8 @@
 obj-m := tee_upgrade.o
 tee_upgrade-objs := upgrade.o
 
+ITRUSTEE_BUILD_PATH=${CUR_DIR}/../../../
+
 APP_CFLAGS += -I$(ITRUSTEE_BUILD_PATH)/thirdparty/open_source/libboundscheck/include
 
 APP_LDFLAGS += -lboundscheck
