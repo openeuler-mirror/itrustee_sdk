@@ -4,13 +4,14 @@ tee_upgrade-objs := upgrade.o
 
 ITRUSTEE_BUILD_PATH=${CUR_DIR}/../../../
 
-APP_CFLAGS += -I$(ITRUSTEE_BUILD_PATH)/thirdparty/open_source/libboundscheck/include
+EXTRA_CFLAGS += -I$(ITRUSTEE_BUILD_PATH)/thirdparty/open_source/libboundscheck/include
 
-APP_LDFLAGS += -lboundscheck
+EXTRA_LDFLAGS += -lboundscheck
 
 KPATH	:= /usr/src/kernels
 KDIR	:= $(KPATH)/$(shell ls $(KPATH))
 
+//The dynamic upgrade of tee depends on the tzdriver library.
 EXTRA_CFLAGS += -I$(PWD)/../tzdriver
 
 all:
