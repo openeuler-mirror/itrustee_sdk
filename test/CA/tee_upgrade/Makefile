@@ -11,7 +11,7 @@ EXTRA_LDFLAGS += -lboundscheck
 KPATH	:= /usr/src/kernels
 KDIR	:= $(KPATH)/$(shell ls $(KPATH))
 
-//The dynamic upgrade of tee depends on the tzdriver library.
+#The dynamic upgrade of tee depends on the tzdriver library.
 EXTRA_CFLAGS += -I$(PWD)/../tzdriver
 
 all:
