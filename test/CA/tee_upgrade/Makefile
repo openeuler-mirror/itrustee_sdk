@@ -6,8 +6,6 @@ ITRUSTEE_BUILD_PATH=${CUR_DIR}/../../../
 
 EXTRA_CFLAGS += -I$(ITRUSTEE_BUILD_PATH)/thirdparty/open_source/libboundscheck/include
 
-EXTRA_LDFLAGS += -lboundscheck
-
 KPATH	:= /usr/src/kernels
 KDIR	:= $(KPATH)/$(shell ls $(KPATH))
 
