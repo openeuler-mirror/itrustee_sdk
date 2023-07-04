@@ -2,7 +2,9 @@
 obj-m := tee_upgrade.o
 tee_upgrade-objs := upgrade.o
 
-EXTRA_CFLAGS += -I$(PWD)/../itrustee/platform/libhwsecurec/include/libhwsecurec -I$(PWD)/../iTrustee/platform/libhwsecurec/include
+APP_CFLAGS += -I$(ITRUSTEE_BUILD_PATH)/thirdparty/open_source/libboundscheck/include
+
+APP_LDFLAGS += -lboundscheck
 
 KPATH	:= /usr/src/kernels
 KDIR	:= $(KPATH)/$(shell ls $(KPATH))
