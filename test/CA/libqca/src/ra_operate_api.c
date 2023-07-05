@@ -17,11 +17,19 @@
 #include "ra_log.h"
 #include "ra_client_api.h"
 
+#ifdef CONTAINER_QCA
+static const TEEC_UUID g_tee_qta_report_uuid = {
+    0x4f84c0e0, 0x4c3f, 0x422f, {
+        0x97, 0xdc, 0x14, 0xbf, 0xa2, 0x31, 0x4a, 0xd1
+    }
+};
+#else
 static const TEEC_UUID g_tee_qta_uuid = {
     0xe08f7eca, 0xe875, 0x440e, {
         0x9a, 0xb0, 0x5f, 0x38, 0x11, 0x36, 0xc6, 0x00
     }
 };
+#endif
 
 static TEEC_Result set_remote_attest_out_data(TEEC_SharedMemory *shared_out, uint32_t out_size,
     struct ra_buffer_data *out)
@@ -117,7 +125,11 @@ TEEC_Result RemoteAttest(struct ra_buffer_data *in, struct ra_buffer_data *out)
     TEEC_Context context = {0};
     TEEC_Session session = {0};
     TEEC_Operation operation = {0};
+#ifdef CONTAINER_QCA
+    TEEC_UUID uuid = g_tee_qta_report_uuid;
+#else
     TEEC_UUID uuid = g_tee_qta_uuid;
+#endif
 
     TEEC_Result result = TEEC_InitializeContext(NULL, &context);
     if (result != TEEC_SUCCESS) {
@@ -145,3 +157,48 @@ cleanup_1:
     TEEC_FinalizeContext(&context);
     return result;
 }
+
+#ifdef HOST_QCA
+static TEEC_Result container_info_ops(struct ra_buffer_data *info, uint32_t cmd,
+    TEEC_Context *context, TEEC_Session *session, uint32_t *origin)
+{
+    /* invoke command */
+    TEEC_Operation operation = {0};
+    operation.started = 1;
+    operation.paramTypes = TEEC_PARAM_TYPES(TEEC_MEMREF_PARTIAL_INPUT, TEEC_NONE,
+        TEEC_NONE, TEEC_NONE);
+
+    TEEC_SharedMemory shared_info;
+    (void)memset_s(&shared_info, sizeof(shared_info), 0, sizeof(shared_info));
+    shared_info.size = info->size;
+    shared_info.flags = TEEC_MEM_INPUT;
+    TEEC_Result result = TEEC_AllocateSharedMemory(context, &shared_info);
+    if (result != TEEC_SUCCESS) {
+        tloge("allocate shared container info failed, result = 0x%x.\n", result);
+        return result;
+    }
+    operation.params[0].memref.parent = &shared_info;
+    operation.params[0].memref.size = shared_info.size;
+    operation.params[0].memref.offset = 0;
+    (void)memcpy_s(shared_info.buffer, shared_info.size, info->buf, info->size);
+
+    result = TEEC_InvokeCommand(session, cmd, &operation, origin);
+    if (result != TEEC_SUCCESS)
+        tloge("invoke command failed, result = 0x%x\n", result);
+
+    TEEC_ReleaseSharedMemory(&shared_info);
+    return result;
+}
+
+TEEC_Result RegisterContainer(struct ra_buffer_data *container_info, TEEC_Context *context,
+    TEEC_Session *session, uint32_t *origin)
+{
+    if (container_info == NULL || container_info->buf == NULL ||
+        container_info->size == 0 || container_info->size > PARAMS_RESERVED_SIZE ||
+        context == NULL || session == NULL || origin == NULL) {
+        tloge("invalid input\n");
+        return TEEC_ERROR_BAD_PARAMETERS;
+    }
+    return container_info_ops(container_info, REGISTER_CONTAINER_CMD, context, session, origin);
+}
+#endif

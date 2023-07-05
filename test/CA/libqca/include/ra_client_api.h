@@ -19,4 +19,9 @@ struct ra_buffer_data {
 };
 
 TEEC_Result RemoteAttest(struct ra_buffer_data *in, struct ra_buffer_data *out);
+#ifdef HOST_QCA
+TEEC_Result RegisterContainer(struct ra_buffer_data *container_info, TEEC_Context *context,
+    TEEC_Session *session, uint32_t *origin);
+#endif
+
 #endif

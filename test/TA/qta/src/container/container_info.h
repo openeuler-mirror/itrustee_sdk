@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2022-2023. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
  * Licensed under the Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -9,19 +9,14 @@
  * PURPOSE.
  * See the Mulan PSL v2 for more details.
  */
-#ifndef LIBQCA_RA_OPERATE_H
-#define LIBQCA_RA_OPERATE_H
+#ifndef QTA_CONTAINER_INFO_H
+#define QTA_CONTAINER_INFO_H
 
-#include <stdint.h>
-#include "tee_client_api.h"
-#include "ra_client_api.h"
+#include <unistd.h>
+#include <stddef.h>
+#include <tee_defines.h>
 
-#define SHAREMEM_LIMIT            (0x100000) /* 1 MB */
-#define PARAMS_RESERVED_SIZE      (0x2000)
-#define OUT_DATA_RESERVED_SIZE    (0x3000)
-#define REMOTE_ATTEST_CMD         (0x1001)
-#ifdef HOST_QCA
-#define REGISTER_CONTAINER_CMD    (0x1002)
-#endif
-
+TEE_Result init_container_list(void);
+TEE_Result get_nsid_by_container_id(char container_id[], uint32_t *nsid);
+TEE_Result register_container(char container_id[], uint32_t nsid);
 #endif

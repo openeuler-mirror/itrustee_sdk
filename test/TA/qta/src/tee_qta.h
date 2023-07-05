@@ -1,5 +1,5 @@
 /*
- * Copyright (c) Huawei Technologies Co., Ltd. 2022-2022. All rights reserved.
+ * Copyright (c) Huawei Technologies Co., Ltd. 2022-2023. All rights reserved.
  * Licensed under the Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.
  * You may obtain a copy of Mulan PSL v2 at:
@@ -20,7 +20,13 @@
 #define SHAREMEM_LIMIT    0x100000
 #define IN_RESERVED_SIZE  0x2000
 #define OUT_RESERVED_SIZE 0x3000
-#define REMOTE_ATTEST_CMD 0x1001
+#define REMOTE_ATTEST_CMD         0x1001
+#ifdef CONFIG_HOST_QTA
+#define REGISTER_CONTAINER_CMD    0x1002
+#endif
+#if defined(CONFIG_HOST_QTA) || defined(CONFIG_QTA_REPORT)
+#define VERIFY_CONTAINER_CMD      0x1003
+#endif
 
 #define REINTERPRET_CAST(dest_type, source_type, temp)                        \
     ((__extension__(union { source_type source; dest_type dest; })(temp)).dest)
