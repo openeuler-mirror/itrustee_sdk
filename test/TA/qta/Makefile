@@ -53,4 +53,5 @@ src/%.o: ./src/%.c
 	$(CC) $(CFLAGS)  $(INCLUDEDIR) -c $< -o $@
 
 clean:
-	rm -f $(COBJS) *.so *.sec manifest.txt
+	rm -f *.so *.sec manifest.txt
+	find -name *.o | xargs rm -f
