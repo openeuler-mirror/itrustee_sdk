@@ -121,6 +121,8 @@ class AllCfg:
     sign_alg = "RSA"
     ta_cert_chain = ""
     ta_version = 3
+    in_path = ""
+    out_path = ""
 
 
 class PublicCfg:
@@ -230,8 +232,24 @@ def check_cfg(cfg):
     return ret
 
 
-def gen_header(content_len, key_version, cfg):
+def gen_key_version(cfg):
+    ''' gen key version '''
+    if cfg.pub_key_len == '4096':
+        return int(0x0302)
+    elif cfg.pub_key_len == '3072':
+        return int(0x0202)
+    elif cfg.pub_key_len == '2048':
+        return int(0x0002)
+    elif cfg.pub_key_len == '':
+        return int(0x0000)
+
+    logging.error("unhandled pulic key len %s", cfg.pub_key_len)
+    raise RuntimeError
+
+
+def gen_header(content_len, cfg):
     ''' gen header by endian '''
+    key_version = gen_key_version(cfg)
     if SING_BIG_ENDIAN:
         head_tag = '>IHHII'
     else:
@@ -307,12 +325,15 @@ def encrypt_aes_key(pubkey_path, in_data, out_path):
     return
 
 
-def gen_signature(cfg, uuid_str, raw_data, raw_data_path, hash_file_path, \
-        out_file_path, out_path, key_info_data):
-    gen_ta_signature(cfg, uuid_str, raw_data, raw_data_path, \
-        hash_file_path, out_file_path, out_path, key_info_data, SING_BIG_ENDIAN)
-    os.chmod(out_file_path, stat.S_IWUSR | stat.S_IRUSR)
-    return
+def gen_signature(cfg, uuid_str, data_for_sign, key_info_data, temp_path):
+    ''' gen signature '''
+    raw_data_path = os.path.join(temp_path, "dataForSign.bin")
+    hash_file_path = os.path.join(temp_path, "rawDataHash.bin")
+    signature_path = os.path.join(temp_path, "signature.bin")
+
+    gen_ta_signature(cfg, uuid_str, data_for_sign, raw_data_path, \
+        hash_file_path, signature_path, cfg.out_path, key_info_data, SING_BIG_ENDIAN, temp_path)
+    os.chmod(signature_path, stat.S_IWUSR | stat.S_IRUSR)
 
 
 def gen_raw_data(manifest_data_path, manifest_ext_path, elf_file_path, \
@@ -322,7 +343,8 @@ def gen_raw_data(manifest_data_path, manifest_ext_path, elf_file_path, \
     elf_size = os.path.getsize(elf_file_path)
     config_size = 0
 
-    verify_elf_header(elf_file_path)
+    if "pack-App" not in elf_file_path:
+        verify_elf_header(elf_file_path)
 
     fd_op = os.open(raw_file_path, os.O_WRONLY | os.O_CREAT, \
         stat.S_IWUSR | stat.S_IRUSR)
@@ -386,7 +408,7 @@ def parser_api_level(mk_compile_cfg, cmake_compile_cfg):
     elif os.path.exists(cmake_compile_cfg):
         compile_cfg_file = cmake_compile_cfg
     else:
-        logging.error("Build config file doesn't exist, ignore it")
+        logging.critical("Build config file doesn't exist, ignore it")
         return default_api_level
 
     with open(compile_cfg_file) as file_op:
@@ -398,11 +420,14 @@ def parser_api_level(mk_compile_cfg, cmake_compile_cfg):
             logging.critical("ta_api_level = %s", value[0])
             return value[0]
 
-    logging.error("Build Config file doesn't define API_LEVEL")
+    logging.critical("Build Config file doesn't define API_LEVEL")
     return default_api_level
 
 
-def update_api_level(mk_compile_cfg, cmake_compile_cfg, manifest):
+def update_api_level(cfg, manifest):
+    ''' update api level '''
+    mk_compile_cfg = os.path.join(cfg.in_path, "config.mk")
+    cmake_compile_cfg = os.path.join(cfg.in_path, "config.cmake")
     data = ''
     with open(manifest, 'r') as file_op:
         for line in file_op:
@@ -434,7 +459,9 @@ def update_otrp_flag(manifest):
     file_op.close()
 
 
-def gen_data_for_sign(header, key_data, raw_file):
+def gen_data_for_sign(cfg, content_len, key_data, raw_file):
+    ''' gen data for sign '''
+    header = gen_header(int(content_len), cfg)
     raw_file_len = os.path.getsize(raw_file)
     with open(raw_file, 'rb') as raw_fp:
         raw_data = raw_fp.read(raw_file_len)
@@ -443,20 +470,6 @@ def gen_data_for_sign(header, key_data, raw_file):
     data_sign += key_data
     data_sign += raw_data
     return data_sign
-
-
-def gen_key_version(cfg):
-    if cfg.pub_key_len == '4096':
-        return int(0x0302)
-    elif cfg.pub_key_len == '3072':
-        return int(0x0202)
-    elif cfg.pub_key_len == '2048':
-        return int(0x0002)
-    elif cfg.pub_key_len == '':
-        return int(0x0000)
-
-    logging.error("unhandled pulic key len %s", cfg.pub_key_len)
-    raise RuntimeError
 
 
 def pack_signature(signature_path, signature_size):
@@ -500,65 +513,29 @@ def get_sign_cert_block_buffer(cfg, signature_path, signature_size):
     return sign_verify_buf
 
 
-def gen_sec_image(in_path, out_path, cfg):
-    # temporary files
-    temp_path = os.path.join(out_path, "temp")
-    shutil.rmtree(temp_path, ignore_errors=True)
-    os.mkdir(temp_path)
-    os.chmod(temp_path, stat.S_IRWXU)
-    key_info_path = os.path.join(temp_path, "KeyInfo")
-    enc_key_path = os.path.join(temp_path, "KeyInfo.enc")
-    raw_file_path = os.path.join(temp_path, "rawData")
-    enc_raw_path = os.path.join(temp_path, "rawData.enc")
-    manifest_data_path = os.path.join(temp_path, "manifestData.bin")
-    manifest_ext_path = os.path.join(temp_path, "manifestExt.bin")
-    data_for_sign_path = os.path.join(temp_path, "dataForSign.bin")
-    signature_path = os.path.join(temp_path, "signature.bin")
-    hash_path = os.path.join(temp_path, "rawDataHash.bin")
+def get_ta_sign_len(cfg):
+    ''' get ta sign len '''
+    if cfg.sign_type == '4':
+        return 9219
+    if cfg.sign_type == '5':
+        return 0
+    if cfg.sign_type == '6':
+        return 9227
+    if int(cfg.sign_key_len) == 256:
+        return 72
+    return int(cfg.sign_key_len) / 8
 
-    # mandentory input files
-    manifest_path = os.path.join(in_path, "manifest.txt")
-    elf_file_path = os.path.join(in_path, "libcombine.so")
-    mk_cfg_path = os.path.join(in_path, "config.mk")
-    cmake_cfg_path = os.path.join(in_path, "config.cmake")
-    dyn_conf_xml_file_path = os.path.join(in_path, "dyn_perm.xml")
+
+def parser_config(cfg, manifest_path, manifest_ext_path):
+    ''' parser config '''
+    dyn_conf_xml_file_path = os.path.join(cfg.in_path, "dyn_perm.xml")
     tag_parse_dict_file_path = os.path.join(os.getcwd(), "tag_parse_dict.csv")
-    xml_config_path = os.path.join(in_path, "configs.xml")
-    auth_xml_file_path = os.path.join(in_path, "auth_config.xml")
-
-    ta_cert_path = cfg.ta_cert_chain
-    if cfg.ta_version == 5:
-        if cfg.sign_key_type == TYPE_PUBKEY:
-            ta_cert_len = 0
-        else:
-            ta_cert_len = os.path.getsize(ta_cert_path)
-
-    is_encrypt_sec = True
-    if cfg.public_key == "" or cfg.pub_key_len == "":
-        is_encrypt_sec = False
-
-    # 1. parser_manifest
-    manifest_info = process_manifest_file(xml_config_path, \
-            manifest_path, manifest_data_path, manifest_ext_path, SING_BIG_ENDIAN)
-    uuid_str = manifest_info.uuid_str
-    if manifest_info.ret is False:
-        raise RuntimeError
-
-    # 2. update_api_level
-    update_api_level(mk_cfg_path, cmake_cfg_path, manifest_ext_path)
-
-    # 3. update_otrp_flag
-    if cfg.otrp_flag == "1":
-        logging.critical("package otrp sec file\n")
-        update_otrp_flag(manifest_ext_path)
-
-    # 4. parser_dyn_conf
     if os.path.exists(dyn_conf_xml_file_path):
         # V3.1 ta/drv do not need manifest_ext
         if not os.path.exists(cfg.config_path):
             from dyn_conf_parser import parser_dyn_conf
             parser_dyn_conf(dyn_conf_xml_file_path, manifest_ext_path, \
-                            tag_parse_dict_file_path, in_path)
+                            tag_parse_dict_file_path, cfg.in_path)
     else:
         if check_if_is_drv(manifest_path) == 1:
             if not os.path.exists(cfg.config_path):
@@ -569,139 +546,242 @@ def gen_sec_image(in_path, out_path, cfg):
                     mani_ext_fp.write(ans)
 
     # parser auth config xml: the auth info must be packed in the end of manifest_ext.
+    auth_xml_file_path = os.path.join(cfg.in_path, "auth_config.xml")
     if os.path.exists(auth_xml_file_path):
         from auth_conf_parser import parser_auth_xml
         parser_auth_xml(auth_xml_file_path, manifest_ext_path, SING_BIG_ENDIAN)
+
+
+def get_key_info_data(cfg, raw_file_path, key_data_path, raw_data_path):
+    ''' get key info data '''
+    is_encrypt_sec = True
+    if cfg.public_key == "" or cfg.pub_key_len == "":
+        is_encrypt_sec = False
+
+    if is_encrypt_sec is True:
+        # generate AES key info to encrypt raw data
+        key_data, iv_data, key_info_data = gen_aes_key_info(cfg)
+        encrypt_aes_key(cfg.public_key, key_info_data, key_data_path)
+        aes_encrypt(key_data, iv_data, raw_file_path, raw_data_path)
+    else:
+        gen_sign_alg_info(cfg, key_data_path)
+        with open(key_data_path, 'rb') as key_info_fp:
+            key_info_data = key_info_fp.read(os.path.getsize(key_data_path))
+
+    return key_info_data
+
+
+def get_content_len(cfg, key_data_path, raw_data_path):
+    ''' get content len '''
+    sign_len = get_ta_sign_len(cfg)
+    if cfg.ta_version == 5:
+        ta_cert_path = cfg.ta_cert_chain
+        if cfg.sign_key_type == TYPE_PUBKEY:
+            ta_cert_len = 0
+        else:
+            ta_cert_len = os.path.getsize(ta_cert_path)
+        content_len = os.path.getsize(key_data_path) \
+            + 4 + 4 + ta_cert_len + sign_len \
+            + os.path.getsize(raw_data_path)
+    else:
+        content_len = os.path.getsize(key_data_path) \
+            + sign_len \
+            + os.path.getsize(raw_data_path)
+
+    return content_len
+
+
+def get_data_path(cfg, temp_path):
+    ''' get data path '''
+    enc_key_path = os.path.join(temp_path, "KeyInfo.enc")
+    enc_raw_path = os.path.join(temp_path, "rawData.enc")
+    key_info_path = os.path.join(temp_path, "KeyInfo")
+    raw_file_path = os.path.join(temp_path, "rawData")
+
+    is_encrypt_sec = True
+    if cfg.public_key == "" or cfg.pub_key_len == "":
+        is_encrypt_sec = False
+
+    if is_encrypt_sec is True:
+        key_data_path = enc_key_path
+        raw_data_path = enc_raw_path
+    else:
+        key_data_path = key_info_path
+        raw_data_path = raw_file_path
+
+    return key_data_path, raw_data_path
+
+
+def prepare_data(cfg, temp_path):
+    ''' get sec image '''
+    manifest_path = os.path.join(cfg.in_path, "manifest.txt")
+    manifest_data_path = os.path.join(temp_path, "manifestData.bin")
+    manifest_ext_path = os.path.join(temp_path, "manifestExt.bin")
+    elf_file_path = os.path.join(cfg.in_path, "libcombine.so")
+    raw_file_path = os.path.join(temp_path, "rawData")
+    key_data_path, raw_data_path = get_data_path(cfg, temp_path)
+
+    # 1. parser_manifest
+    manifest_info = process_manifest_file(os.path.join(cfg.in_path, "configs.xml"), \
+            manifest_path, manifest_data_path, manifest_ext_path, SING_BIG_ENDIAN)
+    if manifest_info.ret is False:
+        raise RuntimeError
+
+    # 2. update_api_level
+    update_api_level(cfg, manifest_ext_path)
+
+    # 3. update_otrp_flag
+    if cfg.otrp_flag == "1":
+        logging.critical("package otrp sec file\n")
+        update_otrp_flag(manifest_ext_path)
+
+    # 4. parser_dyn_conf
+    parser_config(cfg, manifest_path, manifest_ext_path)
 
     # 5. gen_raw_data
     gen_raw_data(manifest_data_path, manifest_ext_path, elf_file_path, \
             cfg.config_path, raw_file_path, cfg.ta_version)
 
-    if cfg.sign_type == '4':
-        sign_len = 9219
-    elif cfg.sign_type == '5':
-        sign_len = 0
-    elif cfg.sign_type == '6':
-        sign_len = 9227
-    else:
-        if int(cfg.sign_key_len) == 256:
-            sign_len = 72
-        else:
-            sign_len = int(cfg.sign_key_len) / 8
-
     # 6. gen aes key, and encrypt aes key with RSA key,
     #    and encrypt raw data with aes key
-    if is_encrypt_sec is True:
-        # generate AES key info to encrypt raw data
-        key_data, iv_data, key_info_data = gen_aes_key_info(cfg)
-        encrypt_aes_key(cfg.public_key, key_info_data, enc_key_path)
-        aes_encrypt(key_data, iv_data, raw_file_path, enc_raw_path)
+    key_info_data = get_key_info_data(cfg, raw_file_path, key_data_path, raw_data_path)
 
-        # generate Main Header
-        if cfg.ta_version == 5:
-            content_len = os.path.getsize(enc_key_path) \
-                + 4 + 4 + ta_cert_len + sign_len \
-                + os.path.getsize(enc_raw_path)
-        else:
-            content_len = os.path.getsize(enc_key_path) \
-                + sign_len \
-                + os.path.getsize(enc_raw_path)
-    else:
-        gen_sign_alg_info(cfg, key_info_path)
-        # generate Main Header
-        if cfg.ta_version == 5:
-            content_len = os.path.getsize(key_info_path) \
-                + 4 + 4 + ta_cert_len + sign_len \
-                + os.path.getsize(raw_file_path)
-        else:
-            content_len = os.path.getsize(key_info_path) \
-                + sign_len \
-                + os.path.getsize(raw_file_path)
-        with open(key_info_path, 'rb') as key_info_fp:
-            key_info_data = key_info_fp.read(os.path.getsize(key_info_path))
+    # 7. generate content_len and data_for_sign
+    content_len = get_content_len(cfg, key_data_path, raw_data_path)
+    data_for_sign = gen_data_for_sign(cfg, content_len, key_info_data, raw_file_path)
 
-    key_version = gen_key_version(cfg)
-    header = gen_header(int(content_len), key_version, cfg)
-    data_for_sign = gen_data_for_sign(header, key_info_data, raw_file_path)
-
-    uuid_str = uuid_str[0:36]
-    logging.critical("uuid str %s", uuid_str)
-
-    # 7. gen signature
-    gen_signature(cfg, uuid_str, data_for_sign, data_for_sign_path, \
-        hash_path, signature_path, out_path, key_info_data)
-
+    # 8. parse code segment
     if os.path.exists("get_ta_elf_hash.py"):
+        uuid_str = manifest_info.uuid_str
+        uuid_str = uuid_str[0:36]
         if os.path.exists(elf_file_path):
             from get_ta_elf_hash import get_code_segment_from_elf
-            get_code_segment_from_elf(elf_file_path, uuid_str, data_for_sign)
+            get_code_segment_from_elf(elf_file_path, data_for_sign, uuid_str, cfg.out_path)
 
-    # 8. pack sec img: header || key || signature || raw_data
+    if manifest_info.manifest_txt_exist is False and os.path.exists(manifest_path):
+        os.remove(manifest_path)
+
+    return manifest_info, data_for_sign, key_info_data
+
+
+def update_content_len(cfg, key_data_path, raw_data_path, signature_path):
+    ''' update content len '''
+    sign_len = get_ta_sign_len(cfg)
     signature_size = os.path.getsize(signature_path)
+    content_len = get_content_len(cfg, key_data_path, raw_data_path)
     if sign_len == 72:
         if signature_size != 72:
             pack_signature(signature_path, signature_size)
     elif sign_len == 0:
         sign_len = signature_size
         # generate Main Header
-        if is_encrypt_sec is True:
-            key_data_path = enc_key_path
-            raw_data_path = enc_raw_path
-        else:
-            key_data_path = key_info_path
-            raw_data_path = raw_file_path
         content_len = os.path.getsize(key_data_path) \
                 + sign_len \
                 + os.path.getsize(raw_data_path)
-        header = gen_header(int(content_len), key_version, cfg)
 
-    sec_img_path = os.path.join(out_path, manifest_info.product_name)
+    return content_len
+
+
+def pack_sec_img(cfg, manifest_info, temp_path):
+    ''' pack sec img '''
+    signature_path = os.path.join(temp_path, "signature.bin")
+    key_data_path, raw_data_path = get_data_path(cfg, temp_path)
+
+    content_len = update_content_len(cfg, key_data_path, raw_data_path, signature_path)
+    header = gen_header(int(content_len), cfg)
+    sec_img_path = os.path.join(cfg.out_path, manifest_info.product_name)
     fd_image = os.open(sec_img_path, os.O_WRONLY | os.O_CREAT, \
         stat.S_IWUSR | stat.S_IRUSR)
     sec_image = os.fdopen(fd_image, "wb")
     # write to sec file [1.header info]
     sec_image.write(header)
-    if is_encrypt_sec is True:
-        # write to sec file [2.AES key info]
-        enc_key_size = os.path.getsize(enc_key_path)
-        with open(enc_key_path, 'rb') as enc_key_info:
-            sec_image.write(enc_key_info.read(enc_key_size))
-    else:
-        key_info_size = os.path.getsize(key_info_path)
-        with open(key_info_path, 'rb') as key_info_fp:
-            sec_image.write(key_info_fp.read(key_info_size))
+    with open(key_data_path, 'rb') as key_data_fp:
+        sec_image.write(key_data_fp.read(os.path.getsize(key_data_path)))
     # write to sec file [3.signature]
     if cfg.ta_version == 5:
-        signature_size = os.path.getsize(signature_path)
-        sign_cert_buf = get_sign_cert_block_buffer(cfg, signature_path, signature_size)
+        sign_cert_buf = get_sign_cert_block_buffer(cfg, signature_path, os.path.getsize(signature_path))
         sec_image.write(sign_cert_buf)
     else:
-        signature_size = os.path.getsize(signature_path)
         with open(signature_path, 'rb') as signature_file:
-            sec_image.write(signature_file.read(signature_size))
-    if is_encrypt_sec is True:
-        # write to sec file [4.encrypted raw data]
-        enc_raw_size = os.path.getsize(enc_raw_path)
-        with open(enc_raw_path, 'rb') as enc_raw_data:
-            sec_image.write(enc_raw_data.read(enc_raw_size))
-    else:
-        raw_file_size = os.path.getsize(raw_file_path)
-        with open(raw_file_path, 'rb') as raw_file_data:
-            sec_image.write(raw_file_data.read(raw_file_size))
+            sec_image.write(signature_file.read(os.path.getsize(signature_path)))
+    with open(raw_data_path, 'rb') as raw_data_fp:
+        sec_image.write(raw_data_fp.read(os.path.getsize(raw_data_path)))
     sec_image.truncate(int(SEC_HEADER_BYTES) + int(content_len))
     sec_image.close()
-
     logging.critical("=========================SUCCESS============================")
     logging.critical("generate sec(common format) load image success: ")
     logging.critical(sec_img_path)
     logging.critical("============================================================")
 
-    if manifest_info.manifest_txt_exist is False and os.path.exists(manifest_path):
-        os.remove(manifest_path)
 
-    #remove temp files
-    shutil.rmtree(temp_path)
-    return
+def gen_sec_image(temp_path, cfg):
+    ''' get sec image '''
+    shutil.rmtree(temp_path, ignore_errors=True)
+    os.mkdir(temp_path)
+    os.chmod(temp_path, stat.S_IRWXU)
+
+    manifest_info, data_for_sign, key_info_data = prepare_data(cfg, temp_path)
+
+    uuid_str = manifest_info.uuid_str
+    uuid_str = uuid_str[0:36]
+    logging.critical("uuid str %s", uuid_str)
+    gen_signature(cfg, uuid_str, data_for_sign, key_info_data, temp_path)
+
+    pack_sec_img(cfg, manifest_info, temp_path)
+
+
+def print_file(file_path):
+    ''' print file content '''
+    file_size = os.path.getsize(file_path)
+    with open(file_path, 'rb') as file_fd:
+        file_info = file_fd.read(file_size)
+    buf = [hex(int(i)) for i in file_info]
+    output = " ".join(buf)
+    logging.error("%s", output)
+
+
+def check_signature(temp_path, check_path):
+    ''' check ta signature '''
+    temp_hash_path = os.path.join(temp_path, "rawDataHash.bin")
+    check_hash_path = os.path.join(check_path, "rawDataHash.bin")
+
+    temp_hash_size = os.path.getsize(temp_hash_path)
+    check_hash_size = os.path.getsize(check_hash_path)
+    if temp_hash_size != check_hash_size:
+        logging.error("hash file size is diff: %d, %d", temp_hash_size, check_hash_size)
+        return -1
+
+    with open(temp_hash_path, 'rb') as temp_hash_fp:
+        temp_hash_info = temp_hash_fp.read(temp_hash_size)
+    with open(check_hash_path, 'rb') as check_hash_fp:
+        check_hash_info = check_hash_fp.read(check_hash_size)
+    if temp_hash_info != check_hash_info:
+        logging.error("hash file content is diff:")
+        logging.error("temp_hash_info:")
+        print_file(temp_hash_path)
+        logging.error("check_hash_info:")
+        print_file(check_hash_path)
+        return -1
+
+    return 0
+
+
+def check_inout_path(in_path, out_path):
+    ''' check inpath or outpath valid '''
+    if not os.path.exists(in_path):
+        logging.error("input_path does not exist.")
+        return 1
+    if not os.path.exists(out_path):
+        logging.error("out_path does not exist.")
+        return 1
+    if whitelist_check(in_path):
+        logging.error("input_path is incorrect.")
+        return 1
+    if whitelist_check(out_path):
+        logging.error("out_path is incorrect.")
+        return 1
+
+    return 0
 
 
 def main():
@@ -737,27 +817,35 @@ def main():
     if check_cfg(cfg):
         logging.error("the configuration file field is incorrect.")
         exit()
-    in_path = os.path.realpath(args.in_path)
-    out_path = os.path.realpath(args.out_path)
-    if not os.path.exists(in_path):
-        logging.error("input_path does not exist.")
-        exit()
-    if not os.path.exists(out_path):
-        logging.error("out_path does not exist.")
-        exit()
-    if whitelist_check(in_path):
-        logging.error("input_path is incorrect.")
-        exit()
-    if whitelist_check(out_path):
-        logging.error("out_path is incorrect.")
+    cfg.in_path = os.path.realpath(args.in_path)
+    cfg.out_path = os.path.realpath(args.out_path)
+    if check_inout_path(cfg.in_path, cfg.out_path):
         exit()
     os.chdir(sign_tool_dir)
 
     if cfg.re_sign_flag == "1":
         from re_generate_signature import re_sign_sec_img
-        re_sign_sec_img(in_path, out_path, cfg)
+        re_sign_sec_img(cfg.in_path, cfg.out_path, cfg)
     else:
-        gen_sec_image(in_path, out_path, cfg)
+        if SING_BIG_ENDIAN:
+            retry_time = 0
+            result = -1
+            while retry_time <= 3 and result != 0:
+                temp_path = os.path.join(cfg.out_path, "temp")
+                check_path = os.path.join(cfg.out_path, "check")
+                gen_sec_image(temp_path, cfg)
+                gen_sec_image(check_path, cfg)
+                result = check_signature(temp_path, check_path)
+                shutil.rmtree(check_path)
+                shutil.rmtree(temp_path)
+                retry_time += 1
+            if retry_time > 3 and result != 0:
+                raise RuntimeError
+        else:
+            temp_path = os.path.join(cfg.out_path, "temp")
+            gen_sec_image(temp_path, cfg)
+            #remove temp files
+            shutil.rmtree(temp_path)
 
 
 if __name__ == '__main__':

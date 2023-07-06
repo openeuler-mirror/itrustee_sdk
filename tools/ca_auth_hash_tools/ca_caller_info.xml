@@ -1,0 +1,15 @@
+<caller_info>
+    <!--
+    <cmdline_uid>
+        <item cmdline="/vendor/bin/teec_hello" uid="0" />
+        <item cmdline="/system/bin/teec_hello" uid="1000" />
+    </cmdline_uid>
+    <cmdline_username>
+        <item cmdline="/vendor/bin/teec_hello" username="root" />
+    </cmdline_username>
+    <apk_hap>
+        <item pkg_name="com.example.myapplicationohdemo" modulue="6f85f3ad5fa01dfcddd4b2f23815f47fc03a68fbe99297be20bd0e114b7e8c54" exponent="650769812a97c80a3751f015e7b6069492c0fe8de375abe8cdf9188c9c0d3851" />
+        <item pkg_name="com.hwtest.tee_test_apk" modulue="e1ed2230d446628c24b34e3404f6a1914f2d96feccf3f799b86e90804d3f46e07a5a5e196bb5121a3d5ee454e999d9bf1569aeace0ab04d27573f8a60bc009c6849cef6c2ee27324f17675d4071f489b821f729357e8ee8d8003fa791cbd434946b26b2111f18a5f2d66e59ec741076e7a465dededc7d9077f0f1d755ad5e717f10efe8ab2bb5294729a7ddccbcd47a601e5bd853c2f2d7b34360585977bd28158e4a534249ee1707c17c76150f3e62c34897183e4a2a64009dfb455df4ab6ac40de1522be78abce91ce8dca5e92e24720574d0a4bdfefeda36c97ec36f6173bde8cba474fbd735c6df32b0eeb418cce6193c1a2b53a7bef59661f2f1fb8a955" exponent="010001" />
+    </apk_hap>
+    -->
+</caller_info>

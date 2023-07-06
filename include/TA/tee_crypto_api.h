@@ -18,10 +18,6 @@
 #include <tee_defines.h>
 #include <tee_mem_mgmt_api.h>
 
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
 #define TEE_MAX_KEY_SIZE_IN_BITS      (1024 * 8)
 #define SW_RSA_KEYLEN                 1024
 #define TEE_DH_MAX_SIZE_OF_OTHER_INFO 64 /* bytes */
@@ -35,6 +31,7 @@ enum __TEE_Operation_Constants {
     TEE_OPERATION_ASYMMETRIC_CIPHER    = 6,
     TEE_OPERATION_ASYMMETRIC_SIGNATURE = 7,
     TEE_OPERATION_KEY_DERIVATION       = 8,
+    TEE_OPERATION_KDF_KEY_DERIVATION   = 9,
 };
 
 enum __tee_crypto_algorithm_id {
@@ -103,6 +100,7 @@ enum __tee_crypto_algorithm_id {
     TEE_ALG_HMAC_SM3                     = 0x30000007,
     TEE_ALG_AES_ECB_PKCS5                = 0x10000020,
     TEE_ALG_AES_CBC_PKCS5                = 0x10000220,
+    TEE_ALG_AES_CBC_ISO_PADDING          = 0x10000330,
     TEE_ALG_ECDSA_SHA1                   = 0x70001042,
     TEE_ALG_ECDSA_SHA224                 = 0x70002042,
     TEE_ALG_ECDSA_SHA256                 = 0x70003042,
@@ -136,6 +134,12 @@ enum __tee_crypto_algorithm_id {
     TEE_ALG_SM4_OFB                      = 0x10000514,
     TEE_ALG_AES_OFB                      = 0x10000510,
     TEE_ALG_SM4_GCM                      = 0xF0000005,
+    TEE_ALG_PBKDF2_HMAC_SHA1_DERIVE_KEY  = 0x800020C2,
+    TEE_ALG_PBKDF2_HMAC_SHA256_DERIVE_KEY = 0x800040C2,
+    TEE_ALG_PBKDF2_HMAC_SHA384_DERIVE_KEY = 0x800050C2,
+    TEE_ALG_PBKDF2_HMAC_SHA512_DERIVE_KEY = 0x800060C2,
+    TEE_ALG_HKDF                         = 0x80000047,
+    TEE_ALG_PRF                          = 0xF0000006,
 };
 
 typedef enum __tee_crypto_algorithm_id tee_crypto_algorithm_id;
@@ -272,6 +276,8 @@ struct __TEE_OperationHandle {
     uint32_t dh_hash_mode;          /* #TEE_DH_HASH_Mode */
     uint32_t dh_derive_func;        /* #TEE_DH_DerivFuncMode */
     uint32_t dh_op_mode;            /* #TEE_DH_OpMode_t */
+    void *dh_prime;
+    uint32_t dh_prime_size;
     /* end of DH */
     pthread_mutex_t operation_lock;
     void *hal_info;
@@ -316,7 +322,7 @@ typedef struct __TEE_ObjectHandle TEE_ObjectHandleVar;
  *
  * @return TEE_SUCCESS succss
  * @return TEE_ERROR_OUT_OF_MEMORY #TEE_OperationHandle malloc failed
- * @return TEE_ERROR_NOT_SUPPORTE #TEE_CRYPTO_ALGORITHM_ID not support
+ * @return TEE_ERROR_NOT_SUPPORTE #TEE_CRYPTO_ALGORITHM_ID not support or max key size is out of range
  * @return TEE_ERROR_GENERIC other failed
  */
 TEE_Result TEE_AllocateOperation(TEE_OperationHandle *operation, uint32_t algorithm, uint32_t mode,
@@ -333,7 +339,7 @@ void TEE_FreeOperation(TEE_OperationHandle operation);
 /*
  * get Operation Info
  *
- * @param operation [IN/OUT]  #TEE_OperationHandle
+ * @param operation [IN]  #TEE_OperationHandle
  * @param operationInfo [IN/OUT]  #TEE_OperationInfo
  *
  * @return void
@@ -353,7 +359,7 @@ void TEE_ResetOperation(TEE_OperationHandle operation);
  * set operation key
  *
  * @param operation [IN/OUT]  #TEE_OperationHandle
- * @param key [IN/OUT]  #TEE_ObjectHandle
+ * @param key [IN]  #TEE_ObjectHandle
  *
  * @return TEE_SUCCESS succss
  * @return TEE_ERROR_BAD_PARAMETERS the params is invalid
@@ -365,8 +371,8 @@ TEE_Result TEE_SetOperationKey(TEE_OperationHandle operation, const TEE_ObjectHa
  * set operation key1 and key2
  *
  * @param operation [IN/OUT]  #TEE_OperationHandle
- * @param key1 [IN/OUT]  #TEE_ObjectHandle
- * @param key2 [IN/OUT]  #TEE_ObjectHandle
+ * @param key1 [IN]  #TEE_ObjectHandle
+ * @param key2 [IN]  #TEE_ObjectHandle
  *
  * @return TEE_SUCCESS succss
  * @return TEE_ERROR_BAD_PARAMETERS the params is invalid
@@ -377,7 +383,7 @@ TEE_Result TEE_SetOperationKey2(TEE_OperationHandle operation, const TEE_ObjectH
  * copy src operation to dest operation
  *
  * @param dst_operation [IN/OUT]  #TEE_OperationHandle
- * @param src_operation [IN/OUT]  #TEE_OperationHandle
+ * @param src_operation [IN]  #TEE_OperationHandle
  *
  * @return void
  */
@@ -611,8 +617,8 @@ TEE_Result TEE_AEEncryptFinal(TEE_OperationHandle operation, void *srcData, size
  * @param srcLen [IN]  the length of src data
  * @param destData [OUT] the dest data
  * @param destLen [OUT] the length of dest data
- * @param tag [OUT] the tag buffer
- * @param tagLen [OUT] the length of tag buffer
+ * @param tag [IN] the tag buffer
+ * @param tagLen [IN] the length of tag buffer
  *
  * @return TEE_SUCCESS succss
  * @return TEE_ERROR_MAC_INVALID the tag is invalid
@@ -683,8 +689,8 @@ TEE_Result TEE_AsymmetricSignDigest(TEE_OperationHandle operation, const TEE_Att
  * @param paramCount [IN] the count of params
  * @param digest [IN]  the digest data
  * @param digestLen [IN]  the length of digest data
- * @param signature [OUT] the signature data
- * @param signatureLen [OUT] the length of signature data
+ * @param signature [IN] the signature data
+ * @param signatureLen [IN] the length of signature data
  *
  * @return TEE_SUCCESS succss
  * @return TEE_ERROR_BAD_PARAMETERS the params is invalid
@@ -700,7 +706,7 @@ TEE_Result TEE_AsymmetricVerifyDigest(TEE_OperationHandle operation, const TEE_A
  *
  * @param operation [IN/OUT] #TEE_OperationHandle
  * @param operationInfoMultiple [IN/OUT] #TEE_OperationInfoMultiple
- * @param operationSize [IN/OUT] the size of operation handle
+ * @param operationSize [IN] the size of operation handle
  *
  * @return TEE_SUCCESS succss
  * @return TEE_ERROR_BAD_PARAMETERS the params is invalid

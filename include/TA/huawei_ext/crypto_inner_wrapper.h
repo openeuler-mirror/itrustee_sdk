@@ -20,7 +20,7 @@
  * Get common name from certificate.
  *
  * @param name      [OUT]    The common name buffer
- * @param name_size [IN/OUT] The length of common name buffer
+ * @param name_size [IN]     The length of common name buffer
  * @param cert      [IN]     The certificate buffer
  * @param cert_len  [IN]     The length of certificate buffer
  *
@@ -33,7 +33,7 @@ int32_t get_subject_CN(uint8_t *name, uint32_t name_size, const uint8_t *cert, u
  * Get organization name from certificate.
  *
  * @param name      [OUT]    The organization name buffer
- * @param name_size [IN/OUT] The length of organization name buffer
+ * @param name_size [IN]     The length of organization name buffer
  * @param cert      [IN]     The certificate buffer
  * @param cert_len  [IN]     The length of certificate buffer
  *

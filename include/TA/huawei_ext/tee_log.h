@@ -29,16 +29,16 @@
 #define TA_LOG_LEVEL TA_LOG_LEVEL_DEFAULT
 #endif
 
-#define TAG_VERB  "[verb]"
-#define TAG_DEBUG "[debug]"
-#define TAG_INFO  "[info]"
-#define TAG_WARN  "[warn]"
-#define TAG_ERROR "[error]"
+#define TAG_VERB  "[VERB]"
+#define TAG_DEBUG "[DEBUG]"
+#define TAG_INFO  "[INFO]"
+#define TAG_WARN  "[WARN]"
+#define TAG_ERROR "[ERROR]"
 
-#define DEBUG_TAG   "[debug]"
-#define INFO_TAG    "[info]"
-#define WARNING_TAG "[warning]"
-#define ERROR_TAG   "[error]"
+#define DEBUG_TAG   "[DEBUG]"
+#define INFO_TAG    "[INFO]"
+#define WARNING_TAG "[WARN]"
+#define ERROR_TAG   "[ERROR]"
 typedef enum {
     LOG_LEVEL_ERROR = 0,
     LOG_LEVEL_WARN  = 1,
@@ -211,9 +211,9 @@ in release version, users have to modify the level by compile
 #define ta_error(fmt, args...) uart_printf_func("%s: " fmt " ", ERROR_TAG, ##args)
 
 /* Log level for SLogx */
-#define TRACE_S   "[Trace]"
-#define WARNING_S "[Warning]"
-#define ERROR_S   "[Error]"
+#define TRACE_S   "[TRACE]"
+#define WARNING_S "[WARN]"
+#define ERROR_S   "[ERROR]"
 
 #define TA_SLOG_LEVEL_ERROR   0
 #define TA_SLOG_LEVEL_WARNING 1

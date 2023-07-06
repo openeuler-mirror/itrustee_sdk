@@ -14,10 +14,6 @@
 #ifndef _TEE_CLIENT_API_H_
 #define _TEE_CLIENT_API_H_
 
-#ifndef LOG_TAG
-#define LOG_TAG NULL
-#endif
-
 #ifdef LOG_NDEBUG
 #undef LOG_NDEBUG
 #endif

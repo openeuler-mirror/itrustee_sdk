@@ -73,7 +73,7 @@ int32_t derive_ecc_private_key_from_huk(ecc_priv_key_t *priv, const uint8_t *sec
  * Convert the ecc_pub_key_t structure passed in by the user into ecc public key buffer.
  *
  * @param out    [OUT]    The ecc public key buffer
- * @param outlen [IN/OUT] The length of ecc public key buffer
+ * @param outlen [IN] The length of ecc public key buffer
  * @param pub    [IN]     The ecc public key structure
  *
  * @return -1: Export ecc public key failed
@@ -122,7 +122,7 @@ int32_t get_next_tlv(uint32_t *type, uint32_t *header_len, const uint8_t *buf, u
  * Use ECC algorithm to sign user data.
  *
  * @param signature  [OUT]    The signature of input data
- * @param sig_siz    [IN/OUT] The length of signature
+ * @param sig_siz    [IN]     The length of signature
  * @param in         [IN]     The data to be sign
  * @param in_len     [IN]     The length of input data
  * @param priv       [IN]     The ecc private key structure

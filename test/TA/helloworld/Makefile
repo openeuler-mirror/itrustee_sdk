@@ -25,4 +25,4 @@ src/%.o: ./src/%.c
 	$(CC) $(CFLAGS)  $(INCLUDEDIR) -c $< -o $@
 
 clean:
-	rm -f $(COBJS) *.so *.sec
+	rm -f $(COBJS) *.so *.sec hash_*.txt

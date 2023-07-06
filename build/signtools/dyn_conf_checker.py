@@ -22,8 +22,14 @@ uuid_split_sym_list = ['-']
 spilt_sym_list = [';', '|', ',']
 unused_sym_list = ['_']
 unique_list = []
+map_region_sym_list = ['-', '_', ':', '.', '@', ";"]
 permission_unique_dict = {}
 cmd_unique_dict = {}
+
+
+def dyn_conf_clean():
+    ''' dyn conf clean '''
+    unique_list.clear()
 
 
 def check_csv_sym(value):
@@ -59,18 +65,19 @@ def check_context_sym(old_item, attr, value):
     for sym in value:
         if sym in uuid_split_sym_list:
             continue
-        elif sym in spilt_sym_list:
+        if sym in spilt_sym_list:
             continue
-        elif sym in unused_sym_list:
+        if sym in unused_sym_list:
             continue
-        elif sym >= 'A' and sym <= 'Z':
+        if sym in map_region_sym_list:
             continue
-        elif sym >= 'a' and sym <= 'z':
+        if 'A' <= sym <= 'Z':
             continue
-        elif sym >= '0' and sym <= '9':
+        if 'a' <= sym <= 'z':
             continue
-        else:
-            raise RuntimeError("has invalid sym in xml", \
+        if '0' <= sym <= '9':
+            continue
+        raise RuntimeError("has invalid sym in xml", \
                 old_item + attr, value)
     return 0
 
@@ -163,6 +170,13 @@ def check_virt2phys(value):
     if len(value) > 0:
         if value.lower() != 'true' and value.lower() != 'false':
             raise RuntimeError("virt2phys must be true or false", value)
+
+
+def check_get_vsrootinfo(value):
+    ''' check get vsrootinfo '''
+    if len(value) > 0:
+        if value.lower() != 'true' and value.lower() != 'false':
+            raise RuntimeError("get_vsrootinfo must be true or false", value)
 
 
 def check_exception_mode(value):
@@ -341,7 +355,7 @@ def check_permssion_unique(value, origin_value):
         RuntimeError("permssion trans by csv failed", value, origin_value)
 
     for (i, _) in enumerate(value_list):
-        if value_list[i] in permission_unique_dict.keys() and \
+        if value_list[i] in iter(permission_unique_dict) and \
            permission_unique_dict.get(value_list[i]) != origin_value_list[i]:
             raise RuntimeError("different permission set same num in csv",\
                 value, origin_value)
@@ -356,7 +370,7 @@ def check_cmd_unique(value, origin_value):
         RuntimeError("cmd trans by csv failed", value, origin_value)
 
     for (i, _) in enumerate(value_list):
-        if value_list[i] in cmd_unique_dict.keys() and \
+        if value_list[i] in iter(cmd_unique_dict) and \
            cmd_unique_dict.get(value_list[i]) != origin_value_list[i]:
             raise RuntimeError("different cmd set same num in csv", \
                                value, origin_value)
@@ -426,6 +440,8 @@ def dyn_perm_check(dyn_key, attrib, value, origin_value):
         check_upgrade(value)
     elif dyn_key == 'drv_perm/drv_basic_info/virt2phys':
         check_virt2phys(value)
+    elif dyn_key == 'drv_perm/drv_basic_info/get_vsrootinfo':
+        check_get_vsrootinfo(value)
     elif dyn_key == 'drv_perm/drv_basic_info/exception_mode':
         check_exception_mode(value)
     elif dyn_key == 'drv_perm/drv_io_map/item/chip_type':

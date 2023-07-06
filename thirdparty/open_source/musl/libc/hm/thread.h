@@ -23,7 +23,7 @@
 
 // Hongmeng thread
 int set_thread_priority(cref_t thread, int priority);
-unsigned long thread_tid();
+unsigned long thread_tid(void);
 int __libc_pthread_reinit(void);
 
 #endif

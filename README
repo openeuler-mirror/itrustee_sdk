@@ -13,7 +13,7 @@ $ cd test/CA/helloworld
 $ make
 $ cd test/TA/helloworld
 $ make
-copy build result CA executable file and TA binary(xxx.sec) to /vendor/bin/
+copy build result CA executable file and TA binary(xxx.sec) to /var/itrustee/ta
 #the path "/vendor/bin/" may be changed as your opinion, make sure it consistent with the path defined in your TA's source code
 $ /vendor/bin/demo_hello
 

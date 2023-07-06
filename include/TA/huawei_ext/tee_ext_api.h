@@ -43,7 +43,10 @@ extern "C" {
 typedef struct ta_caller_info {
     uint32_t session_type;
     union {
-        TEE_UUID caller_uuid;
+        struct {
+            TEE_UUID caller_uuid;
+            uint32_t group_id;
+        };
         uint8_t ca_info[RESERVED_BUF_SIZE];
     } caller_identity;
     uint8_t smc_from_kernel_mode;
@@ -60,6 +63,26 @@ typedef struct ta_caller_info {
  * return others failed to get caller info
  */
 TEE_Result tee_ext_get_caller_info(caller_info *caller_info_data, uint32_t length);
+
+/*
+ * Get group info of current service
+ *
+ * @param group_id [OUT] group info to be returned
+ *
+ * return TEE_SUCCESS operation success
+ * return others failed to get group info
+ */
+TEE_Result tee_ext_get_group_id(uint32_t *group_id);
+
+/*
+ * Get nsid of current service
+ *
+ * @param nsid [OUT] nsid to be returned
+ *
+ * return TEE_SUCCESS operation success
+ * return others failed to get nsid
+ */
+TEE_Result tee_ext_get_nsid(uint32_t *nsid);
 
 /*
  * verify TA's caller's identify

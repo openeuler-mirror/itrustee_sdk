@@ -21,7 +21,7 @@
  * Recover the root certificate.
  *
  * @param cert     [OUT]    The certificate buffer
- * @param cert_len [IN/OUT] The length of certificate buffer
+ * @param cert_len [IN]     The length of certificate buffer
  * @param priv     [IN]     The private key structure
  * @param keytype  [IN]     The keytype of private key
  *

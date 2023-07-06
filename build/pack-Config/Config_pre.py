@@ -58,11 +58,16 @@ class load_config_header:
     str = struct.Struct('IHHIIIIIIIII')
 
     def __init__(self, data):
-        unpacked_data   = (load_config_header.str).unpack(data.encode())
+        if isinstance(data, bytes):
+            unpacked_data = (load_config_header.str).unpack(data)
+        elif isinstance(data, str):
+            unpacked_data = (load_config_header.str).unpack(data.encode())
+        else:
+            logging.error("wrong input unpacked_data type")
         self.unpacked_data  = unpacked_data
         self.magic_num      = unpacked_data[0]
         self.version        = unpacked_data[1]
-        self.policy_versio  = unpacked_data[2]
+        self.policy_version = unpacked_data[2]
         self.context_len    = unpacked_data[3]
         self.ta_cert_len    = unpacked_data[4]
         self.config_len     = unpacked_data[5]
@@ -161,7 +166,7 @@ def delete_temp_folder(input_path_delete):
 def convert_xml2tlv(xml_file, tlv_file, input_path):
     ''' configs.xml exchange to tlv '''
     if (get_policy_version() & (1 << XML2TLV_PARSE_TOOL_INDEX)) == XML2TLV_PY_VALUE:
-        csv_dir = os.path.realpath(os.path.join(os.getcwd(), 'xml2tlv_tools/csv'))
+        csv_dir = os.path.realpath(os.path.join(os.getcwd(), '../signtools'))
         tag_parse_dict_file_path = \
             os.path.join(csv_dir, 'tag_parse_dict.csv')
         parser_config_xml(xml_file, tag_parse_dict_file_path, \

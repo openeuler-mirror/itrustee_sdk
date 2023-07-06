@@ -41,11 +41,11 @@ DEFAULT_AUTH_TYPE_UID = True
 
 
 # init caller info
-g_caller_num = 0
-g_caller_enable = 1
-g_hash_byte_list = bytes("", 'utf-8')
-g_auth_type = True  # default auth type: cmdline + uid
-g_big_endian = False
+CALLER_NUM = 0
+CALLER_ENABLE = 1
+HASH_BYTE_LIST = bytes("", 'utf-8')
+AUTH_TYPE = True  # default auth type: cmdline + uid
+SIGN_BIG_ENDIAN = False
 
 
 def print_hash(byte_buf):
@@ -85,11 +85,11 @@ def check_auth_enable_type(value):
 
 def get_auth_enable_value(value):
     """ check auth_enable value """
-    global g_caller_enable
+    global CALLER_ENABLE
     if value == "false":
-        g_caller_enable = 0
+        CALLER_ENABLE = 0
     else:
-        g_caller_enable = 1
+        CALLER_ENABLE = 1
 
 
 def check_auth_type(value):
@@ -102,11 +102,11 @@ def check_auth_type(value):
 
 def get_auth_type_value(value):
     """ check auth type value """
-    global g_auth_type
+    global AUTH_TYPE
     if value == "false":
-        g_auth_type = False
+        AUTH_TYPE = False
     else:
-        g_auth_type = True
+        AUTH_TYPE = True
 
 
 def check_item_type(item):
@@ -140,9 +140,9 @@ def get_item_value(item, auth_type):
     cmdline = ""
     uid = 0
     username = ""
-    caller_hash = ""
-    global g_caller_num
-    global g_hash_byte_list
+    caller_hash = bytes()
+    global CALLER_NUM
+    global HASH_BYTE_LIST
 
     if auth_type == DEFAULT_AUTH_TYPE_UID:
         attr_key = "uid"
@@ -171,13 +171,13 @@ def get_item_value(item, auth_type):
         caller_hash = calc_cmdline_username_hash(cmdline, username)
         logging.info("cmdline %s, username %s", cmdline, username)
     print_hash(caller_hash)
-    if g_big_endian is True:
+    if SIGN_BIG_ENDIAN is True:
         pack_format = ">32s"
     else:
         pack_format = "32s"
-    g_hash_byte_list = g_hash_byte_list + struct.pack(pack_format, caller_hash)
-    g_caller_num = g_caller_num + 1
-    if g_caller_num > MAX_CALLER_NUM:
+    HASH_BYTE_LIST = HASH_BYTE_LIST + struct.pack(pack_format, caller_hash)
+    CALLER_NUM = CALLER_NUM + 1
+    if CALLER_NUM > MAX_CALLER_NUM:
         raise RuntimeError("Exceed max caller num", MAX_CALLER_NUM)
 
 
@@ -210,10 +210,10 @@ def do_parser_auth_conf(root):
             if xml_line_num != 0:
                 raise RuntimeError("the auth_base_info must be configured first")
             handle_auth_base_info(child)
-            if g_auth_type != DEFAULT_AUTH_TYPE_UID:
+            if AUTH_TYPE != DEFAULT_AUTH_TYPE_UID:
                 auth_tag = "auth_cmdline_username"
         elif child.tag == auth_tag:
-            handle_auth_item(child, g_auth_type)
+            handle_auth_item(child, AUTH_TYPE)
         else:
             raise RuntimeError("not support xml tag", child.tag)
         xml_line_num = xml_line_num + 1
@@ -221,11 +221,17 @@ def do_parser_auth_conf(root):
 
 def parser_auth_xml(auth_xml_file_path, manifest_ext_path, big_endian=False):
     """ parser auth xml """
-    global g_caller_num
-    global g_hash_byte_list
-    global g_big_endian
+    global CALLER_NUM
+    global CALLER_ENABLE
+    global HASH_BYTE_LIST
+    global AUTH_TYPE
+    global SIGN_BIG_ENDIAN
 
-    g_big_endian = big_endian
+    CALLER_NUM = 0
+    CALLER_ENABLE = 1
+    HASH_BYTE_LIST = bytes("", 'utf-8')
+    AUTH_TYPE = True
+    SIGN_BIG_ENDIAN = big_endian
 
     if not os.path.exists(auth_xml_file_path):
         raise RuntimeError("auth_config.xml file doesn't exist")
@@ -237,15 +243,15 @@ def parser_auth_xml(auth_xml_file_path, manifest_ext_path, big_endian=False):
     do_parser_auth_conf(root)
 
     # gen auth header
-    if g_caller_enable == 0:
-        g_caller_num = 0
-        g_hash_byte_list = bytes("", 'utf-8')
+    if CALLER_ENABLE == 0:
+        CALLER_NUM = 0
+        HASH_BYTE_LIST = bytes("", 'utf-8')
 
-    if g_big_endian is True:
+    if SIGN_BIG_ENDIAN is True:
         pack_format = ">II"
     else:
         pack_format = "II"
-    auth_header = struct.pack(pack_format, g_caller_enable, g_caller_num)
+    auth_header = struct.pack(pack_format, CALLER_ENABLE, CALLER_NUM)
 
     #write auth to mani_ext
     if not os.path.exists(manifest_ext_path):
@@ -255,6 +261,6 @@ def parser_auth_xml(auth_xml_file_path, manifest_ext_path, big_endian=False):
     with os.fdopen(fd_ext, 'ba+') as fp_mani_ext:
         fp_mani_ext.write(bytes(AUTH_CONFIG_KEY, "utf-8"))
         fp_mani_ext.write(auth_header)
-        fp_mani_ext.write(g_hash_byte_list)
+        fp_mani_ext.write(HASH_BYTE_LIST)
         fp_mani_ext.write(bytes("\n", "utf-8"))
         fp_mani_ext.close()
