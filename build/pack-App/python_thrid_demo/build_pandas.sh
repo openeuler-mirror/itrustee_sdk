@@ -34,6 +34,7 @@ if [ $SDKDIR == "clean"]; then
 	rm -rf $ROOTDIR/thirdlib/build
 	rm -rf $ROOTDIR/thirdmodule/build
 	rm -rf $ROOTDIR/thirdmodule/thirdlib
+    exit
 elif [[ ! $SDKDIR || ! $LOCAL_PYTHON_DIR ]]; then
 	echo "usage: ./build.sh SDKDIR LOCAL_PYTHON_DIR "
 	exit
@@ -42,11 +43,11 @@ fi
 mkdir -p $BUILD_DIR/pandas
 PANDAS_PATH=$BUILD_DIR/pandas
 export PYTHONPATH=$PANDAS_PATH/lib/python3.6/site-packages/
-mkdir -p $PANDAS_PATH/lib/python3.6/site-packages/test-easy-install-2815114.write-test-easy-install-2815114
+mkdir -p $PANDAS_PATH/lib/python3.6/site-packages/test-easy-install-2815114.write-test
 
-export CFLAGS=" -fstack-protector-strong -O2 -pipe --sysroot=$SDKTARGETSYSROOT -nostdinc -ISDKTARGETSYSROOT/usr/include/c++/7.3.0 -ISDKTARGETSYSROOT/usr/include/c++/7.3.0/aarch64-hongmeng-musl/ -ISDKTARGETSYSROOT/usr/include -ISDKTARGETSYSROOT/usr/lib/gcc/aarch64-hongmeng-musl/7.3.0/include -I$SDKDIR/sysroots/aarch64-euler-elf_all_in_one/usr/include/"
+export CFLAGS=" -fstack-protector-strong -O2 -pipe --sysroot=$SDKTARGETSYSROOT -nostdinc -I$SDKTARGETSYSROOT/usr/include/c++/7.3.0 -I$SDKTARGETSYSROOT/usr/include/c++/7.3.0/aarch64-hongmeng-musl/ -I$SDKTARGETSYSROOT/usr/include -I$SDKTARGETSYSROOT/usr/lib/gcc/aarch64-hongmeng-musl/7.3.0/include -I$SDKDIR/sysroots/aarch64-euler-elf_all_in_one/usr/include/"
 
-export CXXFLAGS=" -fstack-protector-strong -O2 -pipe --sysroot=$SDKTARGETSYSROOT -nostdinc++ -DHAVE_IOSTREAM -ISDKTARGETSYSROOT/usr/include/c++/7.3.0 -ISDKTARGETSYSROOT/usr/include -ISDKTARGETSYSROOT/usr/lib/gcc/aarch64-hongmeng-musl/7.3.0/include -ISDKTARGETSYSROOT/usr/include/c++/7.3.0/aarch64-hongmeng-musl/ "
+export CXXFLAGS=" -fstack-protector-strong -O2 -pipe --sysroot=$SDKTARGETSYSROOT -nostdinc++ -DHAVE_IOSTREAM -I$SDKTARGETSYSROOT/usr/include/c++/7.3.0 -I$SDKTARGETSYSROOT/usr/include -I$SDKTARGETSYSROOT/usr/lib/gcc/aarch64-hongmeng-musl/7.3.0/include -I$SDKTARGETSYSROOT/usr/include/c++/7.3.0/aarch64-hongmeng-musl/ "
 
 install_py(){
 	python3 setup.py clean
