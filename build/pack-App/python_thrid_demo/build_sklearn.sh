@@ -18,7 +18,7 @@ LOCAL_PYTHON_DIR=$2
 ROOTDIR=$(pwd)
 OUTPUT_PYTHON_DIR=$ROOTDIR/output_python
 BUILD_DIR=${ROOTDIR}/build
-SDKTARGETSYSROOT=$SDKDIR/sysroot/ccos
+SDKTARGETSYSROOT=$SDKDIR/sysroots/ccos
 
 if [ $SDKDIR == "clean"]; then
 	echo "clean begin..."
@@ -28,6 +28,7 @@ if [ $SDKDIR == "clean"]; then
 	rm -rf $ROOTDIR/thirdlib/build
 	rm -rf $ROOTDIR/thirdmodule/build
 	rm -rf $ROOTDIR/thirdmodule/thirdlib
+    exit
 elif [[ ! $SDKDIR || ! $LOCAL_PYTHON_DIR ]]; then
 	echo "usage: ./build.sh SDKDIR LOCAL_PYTHON_DIR "
 	exit
@@ -43,14 +44,14 @@ install_py(){
 }
 
 export PYTHONPATH=$PYTHONPATH:${LOCAL_PYTHON_DIR}
-export PYTHONPATH=$BUILD_DIR/lib/python3.6/site-packages:$PYTHONPATH
+export PYTHONPATH=$SKLEARN_PATH/lib/python3.6/site-packages
 export PYTHONHOME=${LOCAL_PYTHON_DIR}
 export PATH=${LOCAL_PYTHON_DIR}/bin:$PATH
 export PYTHON_CROSSENV=1
 
-export CFLAGS=" -fstack-protector-strong -O2 -pipe --sysroot=$SDKTARGETSYSROOT -nostdinc -ISDKTARGETSYSROOT/usr/include/c++/7.3.0 -ISDKTARGETSYSROOT/usr/include/c++/7.3.0/aarch64-hongmeng-musl/ -ISDKTARGETSYSROOT/usr/include -ISDKTARGETSYSROOT/usr/lib/gcc/aarch64-hongmeng-musl/7.3.0/include -I$SDKDIR/sysroots/aarch64-euler-elf_all_in_one/usr/include/"
+export CFLAGS=" -fstack-protector-strong -O2 -pipe --sysroot=$SDKTARGETSYSROOT -nostdinc -I$SDKTARGETSYSROOT/usr/include/c++/7.3.0 -I$SDKTARGETSYSROOT/usr/include/c++/7.3.0/aarch64-hongmeng-musl/ -I$SDKTARGETSYSROOT/usr/include -I$SDKTARGETSYSROOT/usr/lib/gcc/aarch64-hongmeng-musl/7.3.0/include -I$SDKDIR/sysroots/aarch64-euler-elf_all_in_one/usr/include/"
 
-export CXXFLAGS=" -fstack-protector-strong -O2 -pipe --sysroot=$SDKTARGETSYSROOT -nostdinc++ -DHAVE_IOSTREAM -ISDKTARGETSYSROOT/usr/include/c++/7.3.0 -ISDKTARGETSYSROOT/usr/include -ISDKTARGETSYSROOT/usr/lib/gcc/aarch64-hongmeng-musl/7.3.0/include -ISDKTARGETSYSROOT/usr/include/c++/7.3.0/aarch64-hongmeng-musl/"
+export CXXFLAGS=" -fstack-protector-strong -O2 -pipe --sysroot=$SDKTARGETSYSROOT -nostdinc++ -DHAVE_IOSTREAM -I$SDKTARGETSYSROOT/usr/include/c++/7.3.0 -I$SDKTARGETSYSROOT/usr/include -I$SDKTARGETSYSROOT/usr/lib/gcc/aarch64-hongmeng-musl/7.3.0/include -I$SDKTARGETSYSROOT/usr/include/c++/7.3.0/aarch64-hongmeng-musl/"
 
 cd scikit-learn-0.24.2
 
