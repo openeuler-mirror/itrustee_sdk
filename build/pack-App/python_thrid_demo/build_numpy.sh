@@ -1,6 +1,6 @@
 #!/bin/bash
 # Description: preare toolchains and env for build ta.
-# Copyright @ Huawei Technologies Co., Ltd. 2021-2022. All rights reserved.
+# Copyright @ Huawei Technologies Co., Ltd. 2023-2023. All rights reserved.
 # Licensed under the Mulan PSL v2.
 # You can use this software according to the terms and conditions of the Mulan
 # PSL v2.
