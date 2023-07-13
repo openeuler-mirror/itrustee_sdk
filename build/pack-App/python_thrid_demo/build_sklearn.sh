@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+set -e
+set -x
+
+SDKDIR=$1
+LOCAL_PYTHON_DIR=$2
+ROOTDIR=$(pwd)
+OUTPUT_PYTHON_DIR=$ROOTDIR/output_python
+BUILD_DIR=${ROOTDIR}/build
+SDKTARGETSYSROOT=$SDKDIR/sysroot/ccos
+
+if [ $SDKDIR == "clean"]; then
+	echo "clean begin..."
+	rm -rf $ROOTDIR/cpython
+	rm -rf $BUILD_DIR
+	rm -rf $OUTPUT_PYTHON_DIR
+	rm -rf $ROOTDIR/thirdlib/build
+	rm -rf $ROOTDIR/thirdmodule/build
+	rm -rf $ROOTDIR/thirdmodule/thirdlib
+elif [[ ! $SDKDIR || ! $LOCAL_PYTHON_DIR ]]; then
+	echo "usage: ./build.sh SDKDIR LOCAL_PYTHON_DIR "
+	exit
+fi
+
+mkdir -p ${BUILD_DIR}/sklearn/lib/python3.6/site-packages/
+
+SKLEARN_PATH=$BUILD_DIR/sklearn
+
+install_py(){
+	python3 setup.py clean
+	python3 setup.py install --prefix=$SKLEARN_PATH
+}
+
+export PYTHONPATH=$PYTHONPATH:${LOCAL_PYTHON_DIR}
+export PYTHONPATH=$BUILD_DIR/lib/python3.6/site-packages:$PYTHONPATH
+export PYTHONHOME=${LOCAL_PYTHON_DIR}
+export PATH=${LOCAL_PYTHON_DIR}/bin:$PATH
+export PYTHON_CROSSENV=1
+
+export CFLAGS=" -fstack-protector-strong -O2 -pipe --sysroot=$SDKTARGETSYSROOT -nostdinc -ISDKTARGETSYSROOT/usr/include/c++/7.3.0 -ISDKTARGETSYSROOT/usr/include/c++/7.3.0/aarch64-hongmeng-musl/ -ISDKTARGETSYSROOT/usr/include -ISDKTARGETSYSROOT/usr/lib/gcc/aarch64-hongmeng-musl/7.3.0/include -I$SDKDIR/sysroots/aarch64-euler-elf_all_in_one/usr/include/"
+
+export CXXFLAGS=" -fstack-protector-strong -O2 -pipe --sysroot=$SDKTARGETSYSROOT -nostdinc++ -DHAVE_IOSTREAM -ISDKTARGETSYSROOT/usr/include/c++/7.3.0 -ISDKTARGETSYSROOT/usr/include -ISDKTARGETSYSROOT/usr/lib/gcc/aarch64-hongmeng-musl/7.3.0/include -ISDKTARGETSYSROOT/usr/include/c++/7.3.0/aarch64-hongmeng-musl/"
+
+cd scikit-learn-0.24.2
+
+install_py
