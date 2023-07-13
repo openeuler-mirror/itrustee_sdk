@@ -23,13 +23,13 @@ mkdir -p ${OUTPUT_PYTHON_DIR}/lib/python3.6/site-packages/
 mkdir -p ${BUILD_DIR}/lib/python3.6/site-packages/
 
 export PYTHONPATH=$PYTHONPATH:${LOCAL_PYTHON_DIR}
-export PYTHONPATH=$BUILD_DIR/lib/python3.6/site-packages:$PYTHONPATH
+export PYTHONPATH=$PYTHONPATH:${ROOTDIR}/build/scipy/lib/python3.6/site-packages
 export PYTHONHOME=${LOCAL_PYTHON_DIR}
 export PATH=${LOCAL_PYTHON_DIR}/bin:$PATH
 
-mkdir -p $PANDAS_PATH/lib/python3.6/site-packages/
+mkdir -p ${ROOTDIR}/build/scipy/lib/python3.6/site-packages/
 
-export CC="gcc -mlittle-endian --sysroot=$SDKTARGETSYSROOT -fstack-protector-strong -O2 -pipe -ISDKTARGETSYSROOT/usr/include/c++/7.3.0 -ISDKTARGETSYSROOT/usr/include/c++/7.3.0/aarch64-hongmeng-musl -nostdinc -ISDKTARGETSYSROOT/usr/include -ISDKTARGETSYSROOT/usr/lib/gcc/aarch64-hongmeng-musl/7.3.0/include -I$SDKDIR/sysroots/aarch64-euler-elf_all_in_one/usr/include -L$SDKTARGETSYSROOT/usr/lib -L$SDKTARGETSYSROOT/lib -Lbuild/lib -nostdlib -nostartfiles -lc -lhmulibs -lhmsrv_fs -lhmsrv_net -lhwsecurec -lgcc_s -lm -lstdc++ -Wl,--dynamic-linker=/lib/hmld.so.elf -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack -Wl,-O1 -Wl,--hash-style=gnu -Wl,--as-needed"
+export CC="gcc -mlittle-endian --sysroot=$SDKTARGETSYSROOT -fstack-protector-strong -O2 -pipe -I$SDKTARGETSYSROOT/usr/include/c++/7.3.0 -I$SDKTARGETSYSROOT/usr/include/c++/7.3.0/aarch64-hongmeng-musl -nostdinc -I$SDKTARGETSYSROOT/usr/include -I$SDKTARGETSYSROOT/usr/lib/gcc/aarch64-hongmeng-musl/7.3.0/include -I$SDKDIR/sysroots/aarch64-euler-elf_all_in_one/usr/include -L$SDKTARGETSYSROOT/usr/lib -L$SDKTARGETSYSROOT/lib -Lbuild/lib -nostdlib -nostartfiles -lc -lhmulibs -lhmsrv_fs -lhmsrv_net -lhwsecurec -lgcc_s -lm -lstdc++ -Wl,--dynamic-linker=/lib/hmld.so.elf -Wl,-z,relro -Wl,-z,now -Wl,-z,noexecstack -Wl,-O1 -Wl,--hash-style=gnu -Wl,--as-needed"
 
 install_scipy(){
 	rm -rf build
