@@ -18,7 +18,7 @@ LOCAL_PYTHON_DIR=$2
 ROOTDIR=$(pwd)
 OUTPUT_PYTHON_DIR=$ROOTDIR/output_python
 BUILD_DIR=${ROOTDIR}/build
-SDKTARGETSYSROOT=$SDKDIR/sysroots/ccos
+SDKTARGETSYSROOT=$SDKDIR/sysroot/ccos
 
 if [ $SDKDIR == "clean"]; then
 	echo "clean begin..."
