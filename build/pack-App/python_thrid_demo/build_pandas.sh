@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+set -e
+
+SDKDIR=$1
+LOCAL_PYTHON_DIR=$2
+ROOTDIR=$(pwd)
+OUTPUT_PYTHON_DIR=$ROOTDIR/output_python
+BUILD_DIR=${ROOTDIR}/build
+SDKTARGETSYSROOT=$SDKDIR/sysroot/ccos
+
+mkdir -p ${OUTPUT_PYTHON_DIR}/lib/python3.6/site-packages/
+mkdir -p ${BUILD_DIR}/lib/python3.6/site-packages/
+
+export PYTHONPATH=$PYTHONPATH:${LOCAL_PYTHON_DIR}
+export PYTHONHOME=${LOCAL_PYTHON_DIR}
+export PATH=${LOCAL_PYTHON_DIR}/bin:$PATH
+
+if [ $SDKDIR == "clean"]; then
+	echo "clean begin..."
+	rm -rf $ROOTDIR/cpython
+	rm -rf $BUILD_DIR
+	rm -rf $OUTPUT_PYTHON_DIR
+	rm -rf $ROOTDIR/thirdlib/build
+	rm -rf $ROOTDIR/thirdmodule/build
+	rm -rf $ROOTDIR/thirdmodule/thirdlib
+elif [[ ! $SDKDIR || ! $LOCAL_PYTHON_DIR ]]; then
+	echo "usage: ./build.sh SDKDIR LOCAL_PYTHON_DIR "
+	exit
+fi
+
+mkdir -p $BUILD_DIR/pandas
+PANDAS_PATH=$BUILD_DIR/pandas
+export PYTHONPATH=$PANDAS_PATH/lib/python3.6/site-packages/
+mkdir -p $PANDAS_PATH/lib/python3.6/site-packages/test-easy-install-2815114.write-test-easy-install-2815114
+
+export CFLAGS=" -fstack-protector-strong -O2 -pipe --sysroot=$SDKTARGETSYSROOT -nostdinc -ISDKTARGETSYSROOT/usr/include/c++/7.3.0 -ISDKTARGETSYSROOT/usr/include/c++/7.3.0/aarch64-hongmeng-musl/ -ISDKTARGETSYSROOT/usr/include -ISDKTARGETSYSROOT/usr/lib/gcc/aarch64-hongmeng-musl/7.3.0/include -I$SDKDIR/sysroots/aarch64-euler-elf_all_in_one/usr/include/"
+
+export CXXFLAGS=" -fstack-protector-strong -O2 -pipe --sysroot=$SDKTARGETSYSROOT -nostdinc++ -DHAVE_IOSTREAM -ISDKTARGETSYSROOT/usr/include/c++/7.3.0 -ISDKTARGETSYSROOT/usr/include -ISDKTARGETSYSROOT/usr/lib/gcc/aarch64-hongmeng-musl/7.3.0/include -ISDKTARGETSYSROOT/usr/include/c++/7.3.0/aarch64-hongmeng-musl/ "
+
+install_py(){
+	python3 setup.py clean
+	python3 setup.py install --prefix=$PANDAS_PATH
+}
+
+cd pandas-1.1.5
+
+install_py
