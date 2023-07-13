@@ -19,7 +19,7 @@ OUTPUT_PYTHON_DIR=$ROOTDIR/output_python
 BUILD_DIR=${ROOTDIR}/build
 
 install_py(){
-	python3 setup.py install --prefix=$BUILD_SIR
+	python3 setup.py install --prefix=$BUILD_DIR
 }
 
 export PYTHONPATH=$BUILD_DIR/lib/python3.6/site-packages:$PYTHONPATH
