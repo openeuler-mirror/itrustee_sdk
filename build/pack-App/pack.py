@@ -35,7 +35,7 @@ MAGIC2 = 0x55AA
 
 def add_head_to_tgz(infile, infile_size, tgz_version):
     """ add head to tgz """
-    raw_tag = 'IHHQ256s'
+    raw_tag = 'IHHI256s'
     with os.fdopen(os.open("libcombine.so", os.O_RDWR | os.O_CREAT, 0o755), \
                    "wb", 0o755) as combine_fd:
         with os.fdopen(os.open(infile, os.O_RDWR | os.O_CREAT, 0o755), \
