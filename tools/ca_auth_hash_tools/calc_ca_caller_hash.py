@@ -15,7 +15,7 @@ import binascii
 import struct
 import logging
 import os
-from defusedxml import ElementTree as ET
+import xml.etree.ElementTree as ET
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s line:%(lineno)d %(levelname)s:%(name)s:%(message)s',

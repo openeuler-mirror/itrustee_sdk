@@ -1,0 +1,6 @@
+1. move start.sh and stop.sh to /var/lib/docker/hooks, and add executable right for scripts
+2. move prestart_container.sh and poststop_container.sh to /var/lib/docker/hooks, and add executable right for scripts. This item is optional, if the container key isolation feature is not used, delete the configuration items related to the two scripts from the config.json file.
+3. use gen_config.py to generate config.json, for example. python3 gen_config.py /root/config --memory=200M --cpus=10000 --cpuset-cpus="0,1" --disk-size=300M
+    1) /root/config is dest directory means where you want to generate config.json
+    2) other parameters are used to config tee cgroup resource
+4. docker run --hook-spec=xxx/config.json  ....

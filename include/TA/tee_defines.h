@@ -242,6 +242,7 @@ enum TEE_Result_Value {
     TEE_ERROR_STORAGE_ENFILE                = 0x80001005, /* opened files exceed max count in system                */
     TEE_ERROR_STORAGE_EMFILE                = 0x80001006, /* opened files exceed max count for this process         */
     TEE_ERROR_STORAGE_EROFS                 = 0x80001007, /* stroage section is read only                           */
+    TEE_ERROR_STORAGE_EROLLBACK             = 0x80001008, /* file object has been rolled back                       */
     TEE_ERROR_STORAGE_PATH_WRONG            = 0x8000100A, /* File path error                                        */
     TEE_ERROR_MSG_QUEUE_OVERFLOW            = 0x8000100B, /* sevice msg queue overflow                              */
     TEE_ERROR_SUBTHREAD_ACCESS              = 0x8000100C, /* The subthread created by TA cannot access the service  */
@@ -362,7 +363,6 @@ typedef TEE_Result TEEC_Result;
 typedef uint32_t TEE_TASessionHandle;
 #endif
 
-typedef struct __TEE_ObjectHandle *TEE_ObjectHandle;
 typedef struct __TEE_ObjectEnumHandle *TEE_ObjectEnumHandle;
 typedef struct __TEE_OperationHandle *TEE_OperationHandle;
 

@@ -14,12 +14,15 @@
 #ifndef TEE_CRYPTO_HAL_H
 #define TEE_CRYPTO_HAL_H
 #include "tee_crypto_api.h"
+#define CRYPTO_ENGINE_FLAG_MAX 0xFFFF
+#define CRYPTO_ENGINE_WITHOUT_COPY 0x10000
 enum CRYPTO_ENGINE {
     DX_CRYPTO = 0,
     EPS_CRYPTO = 1,
     SOFT_CRYPTO = 2,
     SEC_CRYPTO = 3,
-    CRYPTO_ENGINE_MAX = 1024,
+    RNG_CRYPTO = 4,
+    CRYPTO_ENGINE_MAX,
 };
 
 /*

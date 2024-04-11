@@ -47,7 +47,7 @@ def check_csv_sym(value):
             raise RuntimeError("has invalid sym in csv", value)
 
 
-def classify_uuid_list(value):
+def classify_uuid_list(dyn_key, attrib, value, origin_value):
 
     ans = ""
     uuid_list = value.split(',')
@@ -110,18 +110,18 @@ def check_and_classify_attr(old_item, attr, value):
     value = do_split_and_classify(old_item, attr, 0, value)
 
     if attr == "uuid":
-        value = classify_uuid_list(value)
+        value = classify_uuid_list(0, 0, value, 0)
 
     return value
 
 
-def check_iomap_range(iomap_range):
+def check_iomap_range(dyn_key, attrib, value, origin_value):
 
-    if len(iomap_range) == 0:
+    if len(value) == 0:
         raise RuntimeError("you must define iomap_range")
 
-    iomap_range.replace(" ", "")
-    iomap_ranges = iomap_range.split(";")
+    value.replace(" ", "")
+    iomap_ranges = value.split(";")
     for iomap in iomap_ranges:
         addrs = iomap.split(",")
         # check if range is start,end format
@@ -130,11 +130,11 @@ def check_iomap_range(iomap_range):
 
         if len(addrs) != 2:
             raise RuntimeError("iomap must be start1,end1;\
-start2,end2....", addrs)
+                start2,end2....", addrs)
 
         if '0x' not in addrs[0] or '0x' not in addrs[1]:
             raise RuntimeError("addr must be hex like \
-0xF8555000", addrs[0], addrs[1])
+                0xF8555000", addrs[0], addrs[1])
 
         # check if addr is 4K aligned
         start = int(addrs[0], 16)
@@ -145,12 +145,12 @@ start2,end2....", addrs)
             raise RuntimeError("addr must be 4K aligned", addrs[0], addrs[1])
         if end <= start:
             raise RuntimeError("iomap range start must \
-smaller than end ", addrs[0], addrs[1])
+                smaller than end ", addrs[0], addrs[1])
 
     return 0
 
 
-def check_thread_limit(value):
+def check_thread_limit(dyn_key, attrib, value, origin_value):
 
     if len(value) > 0:
         thread_limit = int(value)
@@ -158,34 +158,41 @@ def check_thread_limit(value):
             raise RuntimeError("thread_limit is invalid", thread_limit)
 
 
-def check_upgrade(value):
+def check_upgrade(dyn_key, attrib, value, origin_value):
 
     if len(value) > 0:
         if value.lower() != 'true' and value.lower() != 'false':
             raise RuntimeError("upgrade must be true or false", value)
 
 
-def check_virt2phys(value):
+def check_virt2phys(dyn_key, attrib, value, origin_value):
 
     if len(value) > 0:
         if value.lower() != 'true' and value.lower() != 'false':
             raise RuntimeError("virt2phys must be true or false", value)
 
 
-def check_get_vsrootinfo(value):
+def check_ioremap_ns(dyn_key, attrib, value, origin_value):
+    ''' check ioremap ns '''
+    if len(value) > 0:
+        if value.lower() != 'true' and value.lower() != 'false':
+            raise RuntimeError("ioremap ns must be true or false", value)
+
+
+def check_get_vsrootinfo(dyn_key, attrib, value, origin_value):
     ''' check get vsrootinfo '''
     if len(value) > 0:
         if value.lower() != 'true' and value.lower() != 'false':
             raise RuntimeError("get_vsrootinfo must be true or false", value)
 
 
-def check_exception_mode(value):
+def check_exception_mode(dyn_key, attrib, value, origin_value):
 
     if value != "restart" and value != "syscrash" and value != "ddos":
         raise RuntimeError("unknown exception mode", value)
 
 
-def check_chip_type(attrib, value):
+def check_chip_type(dyn_key, attrib, value, origin_value):
 
     if len(value) == 0:
         raise RuntimeError("chip_type cannot be NULL")
@@ -215,7 +222,7 @@ def check_drv_name(value):
 length larger than 31", value)
 
 
-def check_irq(value):
+def check_irq(dyn_key, attrib, value, origin_value):
 
     if len(value) == 0:
         raise RuntimeError("irq cannot be NULL")
@@ -230,7 +237,7 @@ def check_irq(value):
             raise RuntimeError("irq shoule not smaller than 32", value)
 
 
-def check_map_secure_uuid(attrib, value):
+def check_map_secure_uuid(dyn_key, attrib, value, origin_value):
 
     if len(value) != 36:
         raise RuntimeError("uuid len is invalid", value)
@@ -244,7 +251,7 @@ def check_map_secure_uuid(attrib, value):
         raise RuntimeError("please set region in map secure item", attrib)
 
 
-def check_map_secure_region(attrib, value):
+def check_map_secure_region(dyn_key, attrib, value, origin_value):
 
     if len(value) == 0:
         raise RuntimeError("region cannot be NULL")
@@ -257,32 +264,34 @@ def check_map_secure_region(attrib, value):
     if flag == 0:
         raise RuntimeError("please set uuid in map secure item", attrib)
 
-    check_iomap_range(value)
+    check_iomap_range(dyn_key, attrib, value, origin_value)
 
 
-def check_drv_cmd_perm_info_item_permission(attrs, perm):
+def check_drv_cmd_perm_info_item_permission(dyn_key, attrib, value, origin_value):
 
-    if len(perm) == 0:
+    if len(value) == 0:
         raise RuntimeError("permssion len should not be NULL")
 
-    if not re.match(r"^[0-9]*$", perm):
-        raise RuntimeError("there has invalid sym in perm", perm)
+    if not re.match(r"^[0-9]*$", value):
+        raise RuntimeError("there has invalid sym in perm", value)
 
-    if int(perm, 10) > 64 or int(perm, 10) < 1:
-        raise RuntimeError("perm can only in range 1-64", perm)
+    if int(value, 10) > 64 or int(value, 10) < 1:
+        raise RuntimeError("perm can only in range 1-64", value)
 
     flag = 0
 
-    for attr in attrs:
-        if attr == "cmd" and len(attrs[attr]) != 0:
+    for attr in attrib:
+        if attr == "cmd" and len(attrib[attr]) != 0:
             flag = 1
             break
 
     if flag == 0:
         raise RuntimeError("you should set cmd while you set cmd permission")
 
+    check_permssion_unique(value, origin_value)
 
-def check_drv_cmd_perm_info_item_cmd(attrs, dyn_key):
+
+def check_drv_cmd_perm_info_item_cmd(dyn_key, attrib, value, origin_value):
 
     if len(dyn_key) == 0:
         raise RuntimeError("dyn_key len should not be 0")
@@ -290,55 +299,59 @@ def check_drv_cmd_perm_info_item_cmd(attrs, dyn_key):
     flag = 0
 
     cmd = ""
-    for attr in attrs:
-        if attr == "permission" and len(attrs[attr]) != 0:
+    for attr in attrib:
+        if attr == "permission" and len(attrib[attr]) != 0:
             flag = 1
-        if attr == "cmd" and len(attrs[attr]) != 0:
-            cmd = attrs[attr]
-            if (dyn_key, attrs[attr]) in unique_list:
+        if attr == "cmd" and len(attrib[attr]) != 0:
+            cmd = attrib[attr]
+            if (dyn_key, attrib[attr]) in unique_list:
                 raise RuntimeError("one cmd can only set \
-permission once", attrs[attr])
+                        permission once", attrib[attr])
 
     unique_list.append((dyn_key, cmd))
 
     if flag == 0:
         raise RuntimeError("you should set permission while \
-you set cmd permission")
+                you set cmd permission")
+
+    check_cmd_unique(value, origin_value)
 
 
-def check_mac_info_item_permission(attrs, perm):
+def check_mac_info_item_permission(dyn_key, attrib, value, origin_value):
 
-    if len(perm) == 0:
+    if len(value) == 0:
         raise RuntimeError("permssion len should not be 0")
 
-    if ',' in perm or ';' in perm:
-        raise RuntimeError("multi permssion can only split by | ", perm)
+    if ',' in value or ';' in value:
+        raise RuntimeError("multi permssiom can only split by | ", value)
 
     flag = 0
 
-    for attr in attrs:
-        if attr == "uuid" and len(attrs[attr]) != 0:
+    for attr in attrib:
+        if attr == "uuid" and len(attrib[attr]) != 0:
             flag = 1
             break
 
     if flag == 0:
         raise RuntimeError("you should set uuid while \
-you set drvcall's permission")
+                you set drvcall's permission")
 
-    for perm_num in perm.split("|"):
+    for perm_num in value.split("|"):
         if int(perm_num, 10) > 64 or int(perm_num, 10) < 1:
-            raise RuntimeError("perm can only in range 1-64", perm)
+            raise RuntimeError("perm can only in range 1-64", value)
+
+    check_permssion_unique(value, origin_value)
 
 
-def check_mac_info_item_uuid(attrs, dyn_key):
+def check_mac_info_item_uuid(dyn_key, attrib, value, origin_value):
 
     if len(dyn_key) == 0:
         raise RuntimeError("dyn_key len should not be 0")
 
     uuid_str = ""
-    for attr in attrs:
-        if attr == "uuid" and len(attrs[attr]) != 0:
-            uuid_str = attrs[attr]
+    for attr in attrib:
+        if attr == "uuid" and len(attrib[attr]) != 0:
+            uuid_str = attrib[attr]
             if ',' in uuid_str:
                 raise RuntimeError("uuid in mac can only set one", uuid_str)
             if (dyn_key, uuid_str) in unique_list:
@@ -377,124 +390,99 @@ def check_cmd_unique(value, origin_value):
         cmd_unique_dict[value_list[i]] = origin_value_list[i]
 
 
-def check_perm_apply_item(attrs, perm):
+def check_perm_apply_item(dyn_key, attrib, value, origin_value):
 
-    if len(perm) == 0:
+    if len(value) == 0:
         raise RuntimeError("permssion len should not be 0")
 
     flag = 0
 
-    for attr in attrs:
-        if attr == "name" and len(attrs[attr]) != 0:
+    for attr in attrib:
+        if attr == "name" and len(attrib[attr]) != 0:
             flag = 1
             break
 
     if flag == 0:
         raise RuntimeError("you should set drv's name while \
-you set drv's permission")
+                you set drv's permission")
+
+    check_permssion_unique(value, origin_value)
 
 
-def check_ta_config_service_name(service_name):
+def check_ta_config_service_name(dyn_key, attrib, value, origin_value):
 
-    if len(service_name) == 0 or len(service_name) >= 40:
-        raise Exception("service name is invalid", service_name)
-
-
-def check_ta_config_stack_size(stack_size):
-
-    if int(stack_size, 10) > 0xffffffff or int(stack_size, 10) <= 0:
-        raise Exception("stack size is invalid", stack_size)
+    if len(value) == 0 or len(value) >= 40:
+        raise Exception("service name is invalid", value)
 
 
-def check_ta_config_heap_size(heap_size):
+def check_ta_config_stack_size(dyn_key, attrib, value, origin_value):
 
-    if int(heap_size, 10) > 0xffffffff or int(heap_size, 10) <= 0:
-        raise Exception("heap size is invalid", heap_size)
-
-
-def check_ta_config_rpmb_size(rpmb_size):
-
-    if int(rpmb_size, 10) > 0xffffffff or int(rpmb_size, 10) <= 0:
-        raise Exception("rpmb size is invalid", rpmb_size)
+    if int(value, 10) > 0xffffffff or int(value, 10) <= 0:
+        raise Exception("stack size is invalid", value)
 
 
-def check_ta_config_device_id(device_id):
+def check_ta_config_heap_size(dyn_key, attrib, value, origin_value):
 
-    if len(device_id) != 64:
-        raise Exception("device_id len is invalid", device_id)
+    if int(value, 10) > 0xffffffff or int(value, 10) <= 0:
+        raise Exception("heap size is invalid", value)
 
-    for sym in device_id:
+
+def check_ta_config_rpmb_size(dyn_key, attrib, value, origin_value):
+
+    if int(value, 10) > 0xffffffff or int(value, 10) <= 0:
+        raise Exception("rpmb size is invalid", value)
+
+
+def check_ta_config_device_id(dyn_key, attrib, value, origin_value):
+
+    if len(value) != 64:
+        raise Exception("device_id len is invalid", value)
+
+    for sym in value:
         if sym >= 'A' and sym <= 'Z':
             continue
         elif sym >= '0' and sym <= '9':
             continue
         else:
-            raise RuntimeError("has invalid sym in device_id", sym, device_id)
+            raise RuntimeError("has invalid sym in device_id", sym, value)
+
+
+check_fun_list = {
+        'drv_perm/drv_basic_info/thread_limit': check_thread_limit,
+        'drv_perm/drv_basic_info/upgrade': check_upgrade,
+        'drv_perm/drv_basic_info/virt2phys': check_virt2phys,
+        'drv_perm/drv_basic_info/get_vsrootinfo': check_get_vsrootinfo,
+        'drv_perm/drv_basic_info/exception_mode': check_exception_mode,
+        'drv_perm/drv_basic_info/ioremap_ns': check_ioremap_ns,
+        'drv_perm/drv_io_map/item/chip_type': check_chip_type,
+        'drv_perm/drv_io_map/item/iomap': check_iomap_range,
+        'drv_perm/irq/item/irq': check_irq,
+        'drv_perm/map_secure/item/chip_type': check_chip_type,
+        'drv_perm/map_secure/item/uuid': check_map_secure_uuid,
+        'drv_perm/map_secure/item/region': check_map_secure_region,
+        'drv_perm/map_nosecure/item/chip_type': check_chip_type,
+        'drv_perm/drv_cmd_perm_info/item/cmd': check_drv_cmd_perm_info_item_cmd,
+        'drv_perm/drv_cmd_perm_info/item/permission': check_drv_cmd_perm_info_item_permission,
+        'drv_perm/drv_mac_info/item/uuid': check_mac_info_item_uuid,
+        'drv_perm/drv_mac_info/item/permission': check_mac_info_item_permission,
+        'drvcall_conf/drvcall_perm_apply/item/permission': check_perm_apply_item,
+        'ConfigInfo/TA_Basic_Info/service_name/service_name': check_ta_config_service_name,
+        'ConfigInfo/TA_Basic_Info/uuid/uuid': classify_uuid_list,
+        'ConfigInfo/TA_Manifest_Info/stack_size/stack_size': check_ta_config_stack_size,
+        'ConfigInfo/TA_Manifest_Info/heap_size/heap_size': check_ta_config_heap_size,
+        'ConfigInfo/TA_Control_Info/RPMB_Info/RPMB_size/RPMB_size': check_ta_config_rpmb_size,
+        'ConfigInfo/TA_Control_Info/DEBUG_Info/DEBUG_device_id/DEBUG_device_id': check_ta_config_device_id,
+}
+
+
+def check_fun_default(dyn_key, attrib, value, origin_value):
+    ''' check fun default '''
+    return
 
 
 def dyn_perm_check(dyn_key, attrib, value, origin_value):
 
-    if dyn_key == 'drv_perm/drv_basic_info/thread_limit':
-        check_thread_limit(value)
-    elif dyn_key == 'drv_perm/drv_basic_info/upgrade':
-        check_upgrade(value)
-    elif dyn_key == 'drv_perm/drv_basic_info/virt2phys':
-        check_virt2phys(value)
-    elif dyn_key == 'drv_perm/drv_basic_info/get_vsrootinfo':
-        check_get_vsrootinfo(value)
-    elif dyn_key == 'drv_perm/drv_basic_info/exception_mode':
-        check_exception_mode(value)
-    elif dyn_key == 'drv_perm/drv_io_map/item/chip_type':
-        check_chip_type(attrib, value)
-    elif dyn_key == 'drv_perm/drv_io_map/item/iomap':
-        check_iomap_range(value)
-    elif dyn_key == 'drv_perm/irq/item/irq':
-        check_irq(value)
-    elif dyn_key == 'drv_perm/map_secure/item/chip_type':
-        check_chip_type(attrib, value)
-    elif dyn_key == 'drv_perm/map_secure/item/uuid':
-        check_map_secure_uuid(attrib, value)
-        return
-    elif dyn_key == 'drv_perm/map_secure/item/region':
-        check_map_secure_region(attrib, value)
-    elif dyn_key == 'drv_perm/map_nosecure/item/chip_type':
-        check_chip_type(attrib, value)
-    elif dyn_key == 'drv_perm/map_nosecure/item/uuid':
-        # uuid has been checked in classify_uuid()
-        return
-    elif dyn_key == 'drv_perm/drv_cmd_perm_info/item/cmd':
-        # cmd has been trans by csv, so it must be valied
-        check_drv_cmd_perm_info_item_cmd(attrib, dyn_key)
-        check_cmd_unique(value, origin_value)
-        return
-    elif dyn_key == 'drv_perm/drv_cmd_perm_info/item/permission':
-        check_drv_cmd_perm_info_item_permission(attrib, value)
-        check_permssion_unique(value, origin_value)
-    elif dyn_key == 'drv_perm/drv_mac_info/item/uuid':
-        # uuid has been checked in classify_uuid()
-        check_mac_info_item_uuid(attrib, dyn_key)
-        return
-    elif dyn_key == 'drv_perm/drv_mac_info/item/permission':
-        check_mac_info_item_permission(attrib, value)
-        check_permssion_unique(value, origin_value)
-    elif dyn_key == 'drvcall_conf/drvcall_perm_apply/item/permission':
-        check_perm_apply_item(attrib, value)
-        check_permssion_unique(value, origin_value)
-    elif dyn_key == 'ConfigInfo/TA_Basic_Info/service_name/service_name':
-        check_ta_config_service_name(value)
-    elif dyn_key == 'ConfigInfo/TA_Basic_Info/uuid/uuid':
-        classify_uuid_list(value)
-    elif dyn_key == 'ConfigInfo/TA_Manifest_Info/stack_size/stack_size':
-        check_ta_config_stack_size(value)
-    elif dyn_key == 'ConfigInfo/TA_Manifest_Info/heap_size/heap_size':
-        check_ta_config_heap_size(value)
-    elif dyn_key == 'ConfigInfo/TA_Control_Info/RPMB_Info/RPMB_size/RPMB_size':
-        check_ta_config_rpmb_size(value)
-    elif dyn_key == \
-        'ConfigInfo/TA_Control_Info/DEBUG_Info/DEBUG_device_id/DEBUG_device_id':
-        check_ta_config_device_id(value)
-    else:
-        return
+    check_fun_list.get(dyn_key, check_fun_default)(dyn_key, attrib, value, origin_value)
 
 
 def check_text_ava(old_item, text):

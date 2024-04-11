@@ -1,0 +1,27 @@
+{
+                "prestart": [
+                        {
+                                "path": "/var/lib/docker/hooks/start.sh",
+                                "args":[],
+                                "env":[]
+                        },
+                        {
+                                "path": "/var/lib/docker/hooks/prestart_container.sh",
+                                "args":[],
+                                "env":[]
+                        }
+                ],
+                "poststart":[],
+                "poststop":[
+                        {
+                                "path": "/var/lib/docker/hooks/stop.sh",
+                                "args":[],
+                                "env":[]
+                        },
+                        {
+                                "path": "/var/lib/docker/hooks/poststop_container.sh",
+                                "args":[],
+                                "env":[]
+                        }
+                ]
+}

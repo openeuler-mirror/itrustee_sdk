@@ -24,4 +24,11 @@
 #define offsetof(type, member) ((size_t)( (char *)&(((type *)0)->member) - (char *)0 ))
 #endif
 
+#ifdef __clang__
+#ifdef __cplusplus
+namespace std { typedef decltype(nullptr) nullptr_t; }
+using ::std::nullptr_t;
+#endif
+#endif
+
 #endif

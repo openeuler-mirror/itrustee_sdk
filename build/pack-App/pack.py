@@ -26,6 +26,8 @@ import logging
 import subprocess
 sys.path.append('../pack-Config')
 from Config_pre import gen_data_for_sign
+# set logging level for INFO
+logging.basicConfig(level=logging.INFO)
 
 
 COMPRESS_LEVEL = 9
@@ -69,11 +71,24 @@ def run_cmd(command):
         sys.exit(1)
 
 
-def run_clean():
+def run_clean(file_name):
     """ delete build files """
-    cmd = ["rm", "libcombine.so", "config", "manifest.txt", "configs.xml"]
-    run_cmd(cmd)
-    logging.critical("success to clean")
+    files_to_remove = [
+        "libcombine.so",
+        "config",
+        "manifest.txt",
+        "configs.xml",
+        "data_for_sign",
+        "{}.tar".format(file_name),
+        "{}.tar.gz".format(file_name)
+    ]
+
+    for file in files_to_remove:
+        if os.path.exists(file):
+            cmd = ["rm", file]
+            run_cmd(cmd)
+
+    logging.info("success to clean")
 
 
 def get_file_type(file_name):
@@ -86,10 +101,8 @@ def get_file_type(file_name):
         if ("java" in file_name_list) or (".class" in file_name_list):
             file_type_num = "7" # means java
             return file_type_num
-    logging.info("warning : the input file type cannot be distinguished. \
-                 need python or java")
-    logging.info("warning: the default value is python")
-    file_type_num = "6" # default python
+    logging.info("info: the default file type value is raw executable type")
+    file_type_num = "8" # default raw executable
     return file_type_num
 
 
@@ -112,6 +125,37 @@ def whitelist_check(intput_str):
     return 0
 
 
+def make_package(file_name, tar_file_name, file_path, tgz_file_name):
+    """ make package """
+    # 1. make package
+    try:
+        cmd = ["tar", "cvf", tar_file_name, file_path]
+        run_cmd(cmd)
+        tar_file_size = os.path.getsize(tar_file_name)
+    except RuntimeError:
+        logging.error("pack failed in packaging.")
+        run_clean(file_name)
+        return 1
+
+    # 2. make tgz file
+    try:
+        compress(tar_file_name, tgz_file_name, COMPRESS_LEVEL)
+    except RuntimeError:
+        logging.error("pack failed in compression.")
+        run_clean(file_name)
+        return 1
+
+    # 3. change tgz file to libcombine.so and add head
+    tgz_version = 1
+    try:
+        add_head_to_tgz(tgz_file_name, tar_file_size, tgz_version)
+    except RuntimeError:
+        logging.error("pack failed in header addition.")
+        run_clean(file_name)
+        return 1
+    return 0
+
+
 def main():
     """ main process """
     if len(sys.argv) < 2:
@@ -119,7 +163,9 @@ def main():
         sys.exit(1)
     file_name = sys.argv[1]
     work_path = os.getcwd()
-    output_path = work_path
+    input_path = sys.argv[2] if len(sys.argv) > 2 else work_path
+    output_path = sys.argv[3] if len(sys.argv) > 3 else work_path
+    file_path = os.path.join(input_path, file_name)  # combine input_path and file_name
     if whitelist_check(file_name):
         logging.error("file name is incorrect")
         sys.exit(1)
@@ -129,50 +175,51 @@ def main():
     signtool_path = "{}/../signtools/signtool_v3.py".format(work_path)
     ini_file_path = "{}/../signtools/config_cloud_app.ini".format(work_path)
 
-    # 0. clean by user and check input
-    if file_name == "clean":
-        run_clean()
-        sys.exit(0)
-    elif os.path.exists(file_name):
-        logging.critical("start pack %s", file_name)
+    # clean before pack app
+    run_clean(file_name)
+    if os.path.exists(file_path):
+        logging.info("start pack %s", file_path)
     else:
-        logging.error("%s is not exist, please check", file_name)
+        logging.error("%s is not exist, please check", file_path)
         sys.exit(1)
 
     # 1. get file type
     file_type_num = get_file_type(file_name)
 
     # 2. make package
-    cmd = ["tar", "cvf", tar_file_name, file_name]
-    run_cmd(cmd)
-    tar_file_size = os.path.getsize(tar_file_name)
+    if make_package(file_name, tar_file_name, file_path, tgz_file_name):
+        logging.error("packing failed")
+        sys.exit(1)
 
-    # 3. make tgz file
-    compress(tar_file_name, tgz_file_name, COMPRESS_LEVEL)
-
-    # 4. change tgz file to libcombine.so and add head
-    tgz_version = 1
-    add_head_to_tgz(tgz_file_name, tar_file_size, tgz_version)
-
-    # 5. replace file name type content
+    # 3. replace file name type content
     replace_file_content("pack_tools/manifest_mask.txt", "manifest.txt", \
                          file_name, file_type_num)
     replace_file_content("pack_tools/configs_mask.xml", "configs.xml", \
                          file_name, file_type_num)
 
-    # 6. build config
+    # 4. build config
     config_path = "{}/config".format(work_path) # this parameter is not required but must exist.
-    gen_data_for_sign(work_path, ta_cert_file_path, config_path)
-    cmd = ["mv", "data_for_sign", "config"]
-    run_cmd(cmd)
+    try:
+        gen_data_for_sign(work_path, ta_cert_file_path, config_path)
+        cmd = ["mv", "data_for_sign", "config"]
+        run_cmd(cmd)
+    except RuntimeError:
+        logging.error("pack failed in config building.")
+        run_clean(file_name)
+        sys.exit(1)
 
-    # 7. do sign process
-    cmd = ["python3", "-B", signtool_path, work_path, output_path, "--privateCfg", ini_file_path]
-    run_cmd(cmd)
+    # 5. do sign process
+    try:
+        cmd = ["python3", "-B", signtool_path, work_path, output_path, "--privateCfg", ini_file_path]
+        run_cmd(cmd)
+    except RuntimeError:
+        logging.error("pack failed in signing.")
+        run_clean(file_name)
+        sys.exit(1)
 
-    # 8. do clean
-    run_clean()
-    logging.critical("success to packing %s", file_name)
+    # 6. do clean
+    run_clean(file_name)
+    logging.info("success to packing %s", file_name)
 
 if __name__ == '__main__':
     main()

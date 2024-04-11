@@ -36,6 +36,7 @@ typedef uint32_t TEE_Whence;
  */
 enum Object_Storage_Constants {
     TEE_OBJECT_STORAGE_PRIVATE = 0x00000001, /* Separate private storage space for each application */
+    TEE_OBJECT_STORAGE_ANTIROLLBACK = 0x80000003, /* Add for anti-rollback */
 };
 
 /*

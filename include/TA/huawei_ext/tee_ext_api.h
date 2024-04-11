@@ -132,9 +132,18 @@ TEE_Result AddCaller_CA(const uint8_t *cainfo_hash, uint32_t length);
  */
 TEE_Result AddCaller_TA_all(void);
 
+/*
+ * caller info types:
+ * the SESSION_FROM_CA means caller is CA from REE side
+ * the SESSION_FROM_TA means caller is TA from TEE side
+ * the SESSION_FROM_NOT_SUPPORTED means the current TA task not found, for example, from TA sub thread
+ * the SESSION_FROM_UNKNOWN means the TA caller not found
+ */
 #define SESSION_FROM_CA      0
 #define SESSION_FROM_TA      1
+#define SESSION_FROM_NOT_SUPPORTED 0xFE
 #define SESSION_FROM_UNKNOWN 0xFF
+
 /*
  * get cruurent session type
  *

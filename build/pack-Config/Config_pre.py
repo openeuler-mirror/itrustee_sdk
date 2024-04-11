@@ -19,6 +19,7 @@ import os
 import stat
 import sys
 import hashlib
+import configparser
 import subprocess
 import re
 import logging
@@ -33,6 +34,8 @@ BASE_POLICY_VERSION_TEE = 0b001
 
 XML2TLV_PARSE_TOOL_INDEX = 1
 XML2TLV_PY_VALUE = 1 << XML2TLV_PARSE_TOOL_INDEX
+# set logging level for INFO
+logging.basicConfig(level=logging.INFO)
 
 
 def get_policy_version():
@@ -55,6 +58,7 @@ def whitelist_check(intput_str):
 
 
 class load_config_header:
+    """ load config.ini """
     str = struct.Struct('IHHIIIIIIIII')
 
     def __init__(self, data):
@@ -172,7 +176,7 @@ def convert_xml2tlv(xml_file, tlv_file, input_path):
         parser_config_xml(xml_file, tag_parse_dict_file_path, \
             tlv_file, input_path)
         if os.path.isfile(tlv_file):
-            logging.critical("convert xml to tlv success")
+            logging.info("convert xml to tlv success")
         else:
             logging.error("convert xml to tlv failed")
             raise RuntimeError
@@ -195,9 +199,31 @@ def get_target_type_in_config(config_path, in_path):
                 conf.write(ans)
 
 
+def get_sign_conf_alg(file_name):
+    """ get sign conf alg from config """
+    parser = configparser.ConfigParser()
+    parser.read(file_name)
+    if parser.has_option("signSecPublicCfg", "secSignConfigAlg"):
+        return parser.get("signSecPublicCfg", "secSignConfigAlg")
+    return 2
+
+
+def write_sign_data(input_path, config_header, ta_cert_buf, tlv_config_buf):
+    """ write data for sign to temp file """
+    data_for_sign = os.path.join(input_path, "data_for_sign")
+    fd_sign = os.open(data_for_sign, os.O_WRONLY | os.O_CREAT, \
+        stat.S_IWUSR | stat.S_IRUSR)
+    data_for_sign_fp = os.fdopen(fd_sign, "wb")
+    data_for_sign_fp.write(config_header.get_packed_data())
+    data_for_sign_fp.write(ta_cert_buf)
+    data_for_sign_fp.write(tlv_config_buf)
+    data_for_sign_fp.close()
+
+
 def gen_data_for_sign(input_path, ta_cert_path, config_cert_path):
     ''' convert xml to tlv '''
-    logging.critical(os.getcwd())
+    sign_conf_alg = get_sign_conf_alg(os.path.join(input_path, "config_cloud.ini"))
+    logging.info(os.getcwd())
     creat_temp_folder(input_path)
     tlv_dynconf_data = os.path.join(input_path, "config_tlv")
     xml_config_file = os.path.join(input_path, "configs.xml")
@@ -207,8 +233,7 @@ def gen_data_for_sign(input_path, ta_cert_path, config_cert_path):
         dyn_conf_xml_file_path = os.path.join(input_path, 'temp/dyn_perm.xml')
         # may be use abspath
         csv_dir = os.path.realpath(os.path.join(os.getcwd(), 'xml2tlv_tools/csv'))
-        tag_parse_dict_file_path = \
-             os.path.join(csv_dir, 'tag_parse_dict.csv')
+        tag_parse_dict_file_path = os.path.join(csv_dir, 'tag_parse_dict.csv')
         parser_dyn_conf(dyn_conf_xml_file_path, "", tag_parse_dict_file_path, input_path)
         convert_xml2tlv(xml_config_file, tlv_config_file, input_path)
         src_file_path = os.path.join(input_path, 'temp/configs_bak.xml')
@@ -223,11 +248,9 @@ def gen_data_for_sign(input_path, ta_cert_path, config_cert_path):
 
     if os.path.exists(tlv_dynconf_data):
         with open(tlv_config_file, 'rb') as tlv_config_fp:
-            tlv_config_buf = \
-                tlv_config_fp.read(os.path.getsize(tlv_config_file))
+            tlv_config_buf = tlv_config_fp.read(os.path.getsize(tlv_config_file))
         with open(tlv_dynconf_data, 'rb') as tlv_dynconf_fp:
-            tlv_config_buf = tlv_config_buf + \
-                tlv_dynconf_fp.read(os.path.getsize(tlv_dynconf_data)) + b"\n"
+            tlv_config_buf = tlv_config_buf + tlv_dynconf_fp.read(os.path.getsize(tlv_dynconf_data)) + b"\n"
         tlv_data_size = len(tlv_config_buf)
     else:
         tlv_data_size = os.path.getsize(tlv_config_file)
@@ -238,7 +261,10 @@ def gen_data_for_sign(input_path, ta_cert_path, config_cert_path):
     with open(ta_cert_path, 'rb') as ta_cert_fp:
         ta_cert_buf = struct.pack('I', 1) + ta_cert_fp.read(ta_cert_size)
 
-    sign_data_size = 4 + 4 + 4 + config_cert_size + 512
+    if sign_conf_alg == '3':
+        sign_data_size = 4 + 4 + 4 + config_cert_size + 64
+    else:
+        sign_data_size = 4 + 4 + 4 + config_cert_size + 512
 
     config_hd_len = 44
     context_size = ta_cert_size + tlv_data_size + sign_data_size
@@ -246,15 +272,8 @@ def gen_data_for_sign(input_path, ta_cert_path, config_cert_path):
             CONFIG_VERSION, get_policy_version(), \
             context_size, ta_cert_size, tlv_data_size, sign_data_size)
 
-    logging.critical(os.getcwd())
-    data_for_sign = os.path.join(input_path, "data_for_sign")
-    fd_sign = os.open(data_for_sign, os.O_WRONLY | os.O_CREAT, \
-        stat.S_IWUSR | stat.S_IRUSR)
-    data_for_sign_fp = os.fdopen(fd_sign, "wb")
-    data_for_sign_fp.write(config_header.get_packed_data())
-    data_for_sign_fp.write(ta_cert_buf)
-    data_for_sign_fp.write(tlv_config_buf)
-    data_for_sign_fp.close()
+    logging.info(os.getcwd())
+    write_sign_data(input_path, config_header, ta_cert_buf, tlv_config_buf)
     delete_temp_folder(input_path)
 
 
