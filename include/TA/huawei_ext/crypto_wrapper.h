@@ -16,7 +16,6 @@
 #include <stdint.h>
 #include <tee_defines.h>
 #include "crypto_cert_wrapper.h"
-#include "crypto_device_key_wrapper.h"
 #include "crypto_ec_wrapper.h"
 #include "crypto_ec_x509_wrapper.h"
 #include "crypto_rsa_wrapper.h"

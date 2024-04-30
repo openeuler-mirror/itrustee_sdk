@@ -16,8 +16,7 @@
 
 import os
 import logging
-from defusedxml import ElementTree as ET
-
+import xml.etree.ElementTree as ET
 
 type_trans = {"TYPE_NONE": "-1",
               "TYPE_CLASS": "0",

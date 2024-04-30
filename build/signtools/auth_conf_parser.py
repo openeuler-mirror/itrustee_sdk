@@ -24,7 +24,7 @@ from ctypes import c_uint32
 from ctypes import sizeof
 from ctypes import memmove
 from ctypes import byref
-from defusedxml import ElementTree as ET
+import xml.etree.ElementTree as ET
 
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s line:%(lineno)d %(levelname)s:%(name)s:%(message)s',

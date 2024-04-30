@@ -18,7 +18,7 @@ import string
 import os
 import stat
 import logging
-from defusedxml import ElementTree as ET
+import xml.etree.ElementTree as ET
 from dyn_conf_checker import dyn_perm_check
 from dyn_conf_checker import check_and_classify_attr
 from dyn_conf_checker import check_csv_sym

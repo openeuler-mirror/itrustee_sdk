@@ -306,8 +306,6 @@ typedef struct {
     size_t payload_len;
 } operation_ae_init;
 
-typedef struct __TEE_OperationHandle *TEE_OperationHandle;
-
 typedef struct __TEE_OperationHandle TEE_OperationHandleVar;
 
 typedef struct __TEE_ObjectHandle TEE_ObjectHandleVar;

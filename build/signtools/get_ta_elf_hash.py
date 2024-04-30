@@ -273,6 +273,7 @@ def get_code_segment_from_elf(elf_file_name, sign_data, out_hash_file_name, out_
         logging.error("file name is incorrect.")
         return
 
+    elf_file_name = os.path.realpath(elf_file_name)
     if check_if_pack_app(elf_file_name, sign_data, out_hash_file_name, out_hash_file_path) is True:
         return
 
