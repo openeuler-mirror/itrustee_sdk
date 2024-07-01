@@ -200,7 +200,7 @@ enum TEE_ObjectType {
     TEE_TYPE_CORRUPTED_OBJECT = 0xA00000BE,
 };
 
-#define OBJECT_NAME_LEN_MAX 255
+#define OBJECT_NAME_LEN_MAX 256
 
 struct __TEE_ObjectHandle {
     void *dataPtr;
@@ -325,12 +325,18 @@ enum TEE_Result_Value {
     TEE_ERROR_ROTSRV_NOT_AVAILABLE          = 0xFFFF711B, /* ROT service is not available                           */
     TEE_ERROR_ARTSRV_NOT_AVAILABLE          = 0xFFFF711C, /* ART service is not available                           */
     TEE_ERROR_HSMSRV_NOT_AVAILABLE          = 0xFFFF711D, /* HSM service is not available                           */
+    TEE_ERROR_VRPMB_AGENT_FAIL              = 0xFFFF7200, /* REE vrpmb agent check magic failed, maybe cache fail   */
+    TEE_ERROR_VRPMB_RW_FAIL                 = 0xFFFF7201, /* REE ssd friver rw failed                               */
+    TEE_ERROR_VRPMB_SUPER_MAC_FAILED        = 0xFFFF7202, /* vrpmb check super block mac failed                     */
+    TEE_ERROR_VRPMB_WRITE_REJECT            = 0xFFFF7203, /* reject write to vrpmb                                  */
     TEE_ERROR_ANTIROOT_RSP_FAIL             = 0xFFFF9110, /* AntiRoot Response verify failed                        */
     TEE_ERROR_ANTIROOT_INVOKE_ERROR         = 0xFFFF9111, /* AntiRoot ERROR during invokecmd                        */
     TEE_ERROR_AUDIT_FAIL                    = 0xFFFF9112, /* audit failed                                           */
     TEE_FAIL2                               = 0xFFFF9113, /* unused                                                 */
     TEE_ERROR_IPC_OVERFLOW                  = 0xFFFF9114, /* IPC Channel overflow error                             */
     TEE_ERROR_APM                           = 0xFFFF9115, /* APM error                                              */
+    TEE_ERROR_CA_AUTHFILE_NOT_EXIST         = 0xFFFF9116, /* CA auth file not exist                                 */
+    TEE_ERROR_CA_CALLER_ACCESS_DENIED       = 0xFFFF9117, /* ca caller access is denied                             */
 };
 
 /*

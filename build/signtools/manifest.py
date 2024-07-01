@@ -181,6 +181,7 @@ def update_target_type(target_info):
     max_service_len = 36
     if dyn_conf_target_type == 1:
         target_type = PRODUCT_DRIVER_IMAGE
+        max_service_len = 31
     if dyn_conf_target_type == 3:
         target_type = PRODUCT_SERVICE_IMAGE
     if dyn_conf_target_type == 4:
@@ -195,6 +196,10 @@ def update_target_type(target_info):
     if not re.match(r"^[A-Za-z0-9_-]*$", service_name):
         logging.error("service name only can use [A-Z] [a-z] [0-9] '-' and '_'")
         return (False, 0)
+    if dyn_conf_target_type == 1:
+        if not re.match(r"^[A-Za-z0-9_]*$", service_name):
+            logging.error("driver service name only can use [A-Z] [a-z] [0-9] and _")
+            return (False, 0)
 
     if service_name_len > max_service_len:
         logging.error("service name len cannot larger than %s", str(max_service_len))
