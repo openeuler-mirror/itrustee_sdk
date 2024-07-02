@@ -46,9 +46,9 @@ def main():
         content["prestart"][0]["args"] = start_args
         content["poststop"][0]["args"] = stop_args
 
-        flags = os.O_RDWR | os.CREAT
+        flags = os.O_RDWR | os.O_CREAT
         modes = stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP | stat.S_IROTH
-        with os.fdopen(op.open(file_name, flags, modes), 'w+') as json_file:
+        with os.fdopen(os.open(file_name, flags, modes), 'w+') as json_file:
             json.dump(content, json_file, indent=4)
 
 if __name__ == '__main__':

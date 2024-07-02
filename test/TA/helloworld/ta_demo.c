@@ -42,6 +42,19 @@ static TEE_Result get_ta_version(char* buffer, size_t *buf_len)
     return TEE_SUCCESS;
 }
 
+static TEE_Result add_ta_caller(void)
+{
+    TEE_Result ret = TEE_SUCCESS;
+    ret = addcaller_ca_exec("/vendor/bin/demo_hello", "root");
+    if (ret == TEE_SUCCESS) {
+        tlogd("TA entry point: add ca whitelist success");
+    } else {
+        tloge("TA entry point: add ca whitelist failed");
+        return TEE_ERROR_GENERIC;
+    }
+    return ret;
+}
+
 /**
  * Function TA_CreateEntryPoint
  * Description:
@@ -55,13 +68,9 @@ TEE_Result TA_CreateEntryPoint(void)
     tlogd("----- TA entry point ----- ");
     tlogd("TA version: %s", TA_TEMPLATE_VERSION);
 
-    ret = addcaller_ca_exec("/vendor/bin/demo_hello", "root");
-    if (ret == TEE_SUCCESS) {
-        tlogd("TA entry point: add ca whitelist success");
-    } else {
-        tloge("TA entry point: add ca whitelist failed");
+    ret = add_ta_caller();
+    if (ret != TEE_SUCCESS)
         return TEE_ERROR_GENERIC;
-    }
 
     return TEE_SUCCESS;
 }

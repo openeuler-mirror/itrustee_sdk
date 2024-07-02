@@ -98,6 +98,8 @@ enum Data_Flag_Constants {
     TEE_DATA_FLAG_AES256 =  0x10000000,
     /* If bit29 is set to 1, it means that the lower version will be opened first */
     TEE_DATA_FLAG_OPEN_AESC = 0x20000000,
+    /* If bit30 is set to 1, it means use GM algorithm to protect data */
+    TEE_DATA_FLAG_GM = 0x40000000,
 };
 
 /*

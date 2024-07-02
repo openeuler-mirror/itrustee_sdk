@@ -175,6 +175,24 @@ TEE_Result TEE_EXT_CheckClientPerm(uint32_t param_types, const TEE_Param params[
  */
 TEE_Result tee_ext_derive_ta_platfrom_keys(TEE_ObjectHandle object, uint32_t key_size, const TEE_Attribute *params,
     uint32_t param_count, const uint8_t *exinfo, uint32_t exinfo_size);
+
+struct accel_memref_t {
+    uint64_t buffer;
+    uint32_t size;
+};
+
+/*
+* enable crypto accelerator
+* @param op           [IN] target operation to be accelerated
+* @param length       [IN] lenght of in/out buffer
+* @param memrefs      [IN] in/out buffers
+* @param memref_num   [OUT] num of in/out buffers
+*
+* @return -1 means failed to enable accelerate
+*/
+int32_t tee_enable_crypto_accelerator(TEE_OperationHandle op,
+    size_t length, struct accel_memref_t *memrefs, int *memref_num);
+
 #ifdef __cplusplus
 #if __cplusplus
 }
