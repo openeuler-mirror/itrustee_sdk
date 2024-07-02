@@ -181,7 +181,7 @@ struct accel_memref_t {
     uint32_t size;
 };
 
-/* 
+/*
 * enable crypto accelerator
 * @param op           [IN] target operation to be accelerated
 * @param length       [IN] lenght of in/out buffer
