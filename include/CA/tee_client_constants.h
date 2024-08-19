@@ -75,6 +75,7 @@ enum TEEC_SharedMemCtl {
     TEEC_MEM_OUTPUT = 0x2, /* output type of memory */
     TEEC_MEM_INOUT = 0x3,  /* memory is used as both input and output */
     TEEC_MEM_SHARED_INOUT = 0x4,  /* no copy shared memory */
+    TEEC_MEM_REGISTER_INOUT = 0x5, /* register shared memory */
 };
 
 enum TEEC_ParamType {
@@ -89,6 +90,7 @@ enum TEEC_ParamType {
     TEEC_ION_INPUT = 0x08,  /* input type of icon memory reference, refer TEEC_IonReference */
     TEEC_ION_SGLIST_INPUT = 0x09, /* input type of ion memory block reference, refer TEEC_IonSglistReference */
     TEEC_MEMREF_SHARED_INOUT = 0x0a, /* no copy mem */
+    TEEC_MEMREF_REGISTER_INOUT = 0x0b, /* register shared memory */
     TEEC_MEMREF_WHOLE = 0xc, /* use whole memory block, refer TEEC_RegisteredMemoryReference */
     TEEC_MEMREF_PARTIAL_INPUT = 0xd, /* input type of memory reference, refer TEEC_RegisteredMemoryReference */
     TEEC_MEMREF_PARTIAL_OUTPUT = 0xe, /* output type of memory reference, refer TEEC_RegisteredMemoryReference */
