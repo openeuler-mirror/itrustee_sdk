@@ -364,7 +364,7 @@ def read_key_pem(file_path, arr):
 
 def encrypt_aes_key(pubkey_path, in_data, out_path, cfg):
     ''' encrypt aes key '''
-    if cfg.enc_cont_alg == '1':
+    if cfg.enc_key_alg == '1':
         from gmssl import sm2
         array = ['-----BEGIN PUBLIC KEY-----', 27, '-----END PUBLIC KEY-----', 52, 183]
         pubkey = read_key_pem(pubkey_path, array)
