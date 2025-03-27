@@ -100,6 +100,8 @@ enum Data_Flag_Constants {
     TEE_DATA_FLAG_OPEN_AESC = 0x20000000,
     /* If bit30 is set to 1, it means use GM algorithm to protect data */
     TEE_DATA_FLAG_GM = 0x40000000,
+    /* If bit31 is set to 1, encryption and decryption are performed in the unit of 3KB */
+    TEE_DATA_FLAG_LARGE_CRYPTO_UNIT = 0x80000000,
 };
 
 /*
