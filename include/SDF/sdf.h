@@ -225,6 +225,8 @@ int SDF_OpenDevice(void **phDeviceHandle);
 
 int SDF_CloseDevice(void *hDeviceHandle);
 
+int SDF_OpenSessionWithConf(void *hDeviceHandle, const char* configFile);
+
 int SDF_OpenSession(void *hDeviceHandle, void **phSessionHandle);
 
 int SDF_CloseSession(void *hSessionHandle);
