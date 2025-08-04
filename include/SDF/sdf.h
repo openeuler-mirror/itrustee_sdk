@@ -403,6 +403,18 @@ int SDF_AuthDec(void *hSessionHandle, void *hKeyHandle, unsigned int uiAlgID, un
     unsigned int uiStartVarLength, unsigned char *pucAad, unsigned int uiAadLength, unsigned char *pucAuthData,
     unsigned int *puiAuthDataLength, unsigned char *pucEncData, unsigned int uiEncDataLength,
     unsigned char *pucData, unsigned int *puiDataLength);
+int SDF_AuthEncInit(void* hSessionHandle, void* hKeyHandle, unsigned int uiAlgID, unsigned char *pucStartVar,
+    unsigned int uiStartVarLength, unsigned char* pucAad, unsigned int uiAadLength, unsigned int uiDataLength);
+int SDF_EncUpdate(void *hSessionHandle, unsigned char *pucData, unsigned int uiDataLength, unsigned char *putEncData,
+                  unsigned int *puiEncDataLength);
+int SDF_AuthEncFinal(void *hSessionHandle, unsigned char *pucLastEncData, unsigned int *puiLastEncDataLength,
+                     unsigned char *pucAuthData, unsigned int *puiAuthDataLength);
+int SDF_AuthDecInit(void *hSessionHandle, void *hKeyHandle, unsigned int uiAlgID, unsigned char *pucStartVar,
+    unsigned long uiStartVarLength, unsigned char *pucAad, unsigned long uiAadLength, unsigned char *pucAuthData,
+    unsigned long uiAuthDataLength, unsigned long uiDataLength);
+int SDF_AuthDecUpdate(void *hSessionHandle, unsigned char *pucEncData, unsigned int uiEncDataLength,
+    unsigned char *pucData, unsigned int *puiDataLength);
+int SDF_AuthDecFinal(void *hSessionHandle, unsigned char *pucLastData, unsigned int *puiLastDataLength);
 #ifdef __cplusplus
 }
 #endif
