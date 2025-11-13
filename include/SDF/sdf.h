@@ -70,6 +70,7 @@ extern "C" {
 #define CRYPT_KEY_LENGTH 16
 #define IV_LENGTH 16
 #define TAG_LENGTH 16
+#define STARTVAR_LENGTH 12
 #define NONCE_LENGTH 64
 #define PASSWORD_MAX_LEN 128
 #define STRONG_PASSWORD_COUNT 2
@@ -223,9 +224,9 @@ typedef struct RSArefPrivateKey_st {
 
 int SDF_OpenDevice(void **phDeviceHandle);
 
-int SDF_CloseDevice(void *hDeviceHandle);
+int SDF_OpenDeviceWithConf(void **phDeviceHandle, const char* configFile);
 
-int SDF_OpenSessionWithConf(void *hDeviceHandle, const char* configFile);
+int SDF_CloseDevice(void *hDeviceHandle);
 
 int SDF_OpenSession(void *hDeviceHandle, void **phSessionHandle);
 
@@ -398,23 +399,33 @@ int ECM_FactoryReset();
 int SDF_AuthEnc(void *hSessionHandle, void *hKeyHandle, unsigned int uiAlgID, unsigned char *pucStartVar,
     unsigned int uiStartVarLength, unsigned char *pucAad, unsigned int uiAadLength, unsigned char *pucData,
     unsigned int uiDataLength, unsigned char *pucEncData, unsigned int *puiEncDataLength,
-    unsigned char *pucAuthData, unsigned int *uiAuthDataLength);
+    unsigned char *pucAuthData, unsigned int *puiAuthDataLength);
 int SDF_AuthDec(void *hSessionHandle, void *hKeyHandle, unsigned int uiAlgID, unsigned char *pucStartVar,
     unsigned int uiStartVarLength, unsigned char *pucAad, unsigned int uiAadLength, unsigned char *pucAuthData,
     unsigned int *puiAuthDataLength, unsigned char *pucEncData, unsigned int uiEncDataLength,
     unsigned char *pucData, unsigned int *puiDataLength);
-int SDF_AuthEncInit(void* hSessionHandle, void* hKeyHandle, unsigned int uiAlgID, unsigned char *pucStartVar,
-    unsigned int uiStartVarLength, unsigned char* pucAad, unsigned int uiAadLength, unsigned int uiDataLength);
-int SDF_EncUpdate(void *hSessionHandle, unsigned char *pucData, unsigned int uiDataLength, unsigned char *putEncData,
-                  unsigned int *puiEncDataLength);
+int SDF_AuthEncInit(void *hSessionHandle, void *hKeyHandle, unsigned int uiAlgID, unsigned char *pucStartVar,
+    unsigned int uiStartVarLength, unsigned char *pucAad, unsigned int uiAadLength, unsigned int uiDataLength);
+int SDF_AuthEncUpdate(void *hSessionHandle, unsigned char *pucData, unsigned int uiDataLength,
+    unsigned char *putEncData, unsigned int *puiEncDataLength);
 int SDF_AuthEncFinal(void *hSessionHandle, unsigned char *pucLastEncData, unsigned int *puiLastEncDataLength,
-                     unsigned char *pucAuthData, unsigned int *puiAuthDataLength);
+    unsigned char *pucAuthData, unsigned int *puiAuthDataLength);
 int SDF_AuthDecInit(void *hSessionHandle, void *hKeyHandle, unsigned int uiAlgID, unsigned char *pucStartVar,
-    unsigned long uiStartVarLength, unsigned char *pucAad, unsigned long uiAadLength, unsigned char *pucAuthData,
-    unsigned long uiAuthDataLength, unsigned long uiDataLength);
+    unsigned int uiStartVarLength, unsigned char *pucAad, unsigned int uiAadLength, unsigned char *pucAuthData,
+    unsigned int uiAuthDataLength, unsigned int uiDataLength);
 int SDF_AuthDecUpdate(void *hSessionHandle, unsigned char *pucEncData, unsigned int uiEncDataLength,
     unsigned char *pucData, unsigned int *puiDataLength);
 int SDF_AuthDecFinal(void *hSessionHandle, unsigned char *pucLastData, unsigned int *puiLastDataLength);
+int SDF_EncryptInit(void *hSessionHandle, void *hKeyHandle, unsigned int uiAlgID, unsigned char *pucIV,
+    unsigned int uiIVLength);
+int SDF_EncryptUpdate(void *hSessionHandle, unsigned char *pucData, unsigned int uiDataLength,
+    unsigned char *pucEncData, unsigned int *puiEncDataLength);
+int SDF_EncryptFinal(void *hSessionHandle, unsigned char *pucLastEncData, unsigned int *puiLastEncDataLength);
+int SDF_DecryptInit(void *hSessionHandle, void *hKeyHandle, unsigned int uiAlgID, unsigned char *pucIV,
+    unsigned int uiIVLength);
+int SDF_DecryptUpdate(void *hSessionHandle, unsigned char *pucEncData, unsigned int uiEncDataLength,
+    unsigned char *pucData, unsigned int *puiDataLength);
+int SDF_DecryptFinal(void *hSessionHandle, unsigned char *pucLastData, unsigned int *puiLastDataLength);
 #ifdef __cplusplus
 }
 #endif
