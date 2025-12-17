@@ -14,7 +14,7 @@
 #include "teek_client_api.h"
 #include <linux/vmalloc.h>
 #include <linux/mm.h>
-#include <securec.h>
+#include <linux/module.h>
 #include <linux/slab.h>
 
 #define PART_IAMGE_LEN             0x100000

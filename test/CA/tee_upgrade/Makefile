@@ -2,8 +2,6 @@
 obj-m := tee_upgrade.o
 tee_upgrade-objs := upgrade.o
 
-EXTRA_CFLAGS += -I$(PWD)/../../../thirdparty/open_source/libboundscheck/include
-
 KPATH	:= /usr/src/kernels
 KDIR	:= $(KPATH)/$(shell ls $(KPATH))
 
