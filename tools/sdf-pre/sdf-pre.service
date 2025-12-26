@@ -1,0 +1,17 @@
+[Unit]
+Description=SDF Pre-Service 
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/sdf-pre.sh
+Restart=always
+RestartSec=5s
+User=root
+Group=root
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=sdf-pre
+
+[Install]
+WantedBy=multi-user.target
+Alias=sdf-pre.service
