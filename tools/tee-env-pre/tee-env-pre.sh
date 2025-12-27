@@ -11,11 +11,10 @@ set -e
 
 KERNEL_VERSION=$(uname -r)
 DRIVERS_DIR="/lib/modules/${KERNEL_VERSION}/kernel/drivers/trustzone"
-LOG_FILE="/var/log/tee-env-pre.log"
 CHECK_INTERVAL=30  # check interval(seconds)
 
 log_message() {
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1" | tee -a "$LOG_FILE"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $1"
 }
 
 
@@ -59,7 +58,7 @@ load_single_module() {
     fi
     
     log_message "Installing ${module_name}.ko..."
-    if insmod "$module_file" 2>> "$LOG_FILE"; then
+    if insmod "$module_file"; then
         log_message "Successfully install ${module_name}.ko"
         return 0
     else
@@ -136,11 +135,6 @@ monitor_loop() {
 
 main() {
     log_message "========== start sdf-pre service =========="
-    
-    mkdir -p "$(dirname "$LOG_FILE")"
-    touch "$LOG_FILE"
-    chmod 755 "$LOG_FILE"
-
     load_kernel_modules_and_teecd
     monitor_loop
 }

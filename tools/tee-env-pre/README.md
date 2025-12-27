@@ -2,7 +2,7 @@
 
 ## 简介
 
-Tee-env Pre-Service是一个systemd服务，用于自动加载TEE（可信执行环境）内核模块并启动teecd守护进程。服务会监控这些组件，并在异常时自动恢复。
+Tee-env Pre-Service是一个为升级至ccos的鲲鹏920服务器提供的systemd服务，用于自动加载TEE（可信执行环境）内核模块并启动teecd守护进程。服务会监控这些组件，并在异常时自动恢复。
 
 主要功能
 
@@ -16,7 +16,7 @@ Tee-env Pre-Service是一个systemd服务，用于自动加载TEE（可信执行
 
 ## 前置要求
 
-• 需要文件：tzdriver.ko, tee_upgrade.ko, teecd
+• 需要文件：tzdriver.ko, tee_upgrade.ko
 
 • 文件放置目录：/lib/modules/$(uname -r)/kernel/drivers/trustzone/
 
