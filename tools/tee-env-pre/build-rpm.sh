@@ -3,14 +3,14 @@
 
 set -e
 
-PACKAGE_NAME="sdf-pre"
+PACKAGE_NAME="tee-env-pre"
 VERSION="1.0.0"
 RELEASE="1"
 SPEC_FILE="${PACKAGE_NAME}.spec"
 SOURCE_DIR="rpm-sources"
 BUILD_ROOT="${HOME}/rpmbuild"
-SCRIPT_FILE="sdf-pre.sh"
-SERVICE_FILE="sdf-pre.service"
+SCRIPT_FILE="tee-env-pre.sh"
+SERVICE_FILE="tee-env-pre.service"
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -136,8 +136,8 @@ install_test() {
             
             print_message "Starting service..."
             sudo systemctl daemon-reload
-            sudo systemctl start sdf-pre.service
-            sudo systemctl status sdf-pre.service
+            sudo systemctl start tee-env-pre.service
+            sudo systemctl status tee-env-pre.service
         fi
     fi
 }

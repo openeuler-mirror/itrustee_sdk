@@ -11,8 +11,7 @@ set -e
 
 KERNEL_VERSION=$(uname -r)
 DRIVERS_DIR="/lib/modules/${KERNEL_VERSION}/kernel/drivers/trustzone"
-LOG_FILE="/var/log/sdf-pre.log"
-PID_FILE="/var/run/sdf-pre.pid"
+LOG_FILE="/var/log/tee-env-pre.log"
 CHECK_INTERVAL=30  # check interval(seconds)
 
 log_message() {
@@ -84,10 +83,12 @@ start_teecd() {
             log_message "Successfully run teecd!"
         else
             log_message "ERROR: Fail to run teecd"
+            return 1
         fi
     else
         log_message "teecd is already running"
     fi
+    return 0
 }
 
 
@@ -115,10 +116,6 @@ check_processes() {
 monitor_loop() {
     log_message "Monitoring..."
     
-    echo $$ > "$PID_FILE"
-    
-    trap cleanup SIGINT SIGTERM
-    
     while true; do
         if ! check_processes; then
             log_message "Detected abnormal termination of processes, try to restart..."
@@ -132,35 +129,17 @@ monitor_loop() {
             fi
         fi
 
-        sleep 30
+        sleep $CHECK_INTERVAL
     done
 }
 
-
-cleanup() {
-    log_message "Stoping sdf-pre service..."
-    
-    if [ -f "$PID_FILE" ]; then
-        kill -9 "$(cat "$PID_FILE")" 2>/dev/null || true
-        rm -f "$PID_FILE"
-    fi
-
-    log_message "sdf-pre service is stoped"
-    exit 0
-}
-
-# set exit signal process
-trap cleanup SIGINT SIGTERM
 
 main() {
     log_message "========== start sdf-pre service =========="
     
     mkdir -p "$(dirname "$LOG_FILE")"
-    mkdir -p "$(dirname "$PID_FILE")"
     touch "$LOG_FILE"
-    touch "$PID_FILE"
     chmod 755 "$LOG_FILE"
-    chmod 755 "$PID_FILE"
 
     load_kernel_modules_and_teecd
     monitor_loop

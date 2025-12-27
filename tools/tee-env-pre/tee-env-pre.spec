@@ -1,8 +1,8 @@
 %global debug_package %{nil}
-Name:           sdf-pre
+Name:           tee-env-pre
 Version:        1.0.0
 Release:        1%{?dist}
-Summary:        sdf utils when machine Restart
+Summary:        tee environment preparations when 920 machine Restart
 License:        GPLv3+
 
 # Modified to use a single tarball
@@ -41,8 +41,8 @@ install -d -m 0755 %{buildroot}/var/run
 
 # Install files from BUILD directory
 # Note: %{_builddir}/%{name}-%{version} is the extracted directory
-install -m 0755 %{_builddir}/%{name}-%{version}/sdf-pre.sh %{buildroot}%{_bindir}/sdf-pre.sh
-install -m 0644 %{_builddir}/%{name}-%{version}/sdf-pre.service %{buildroot}%{_unitdir}/sdf-pre.service
+install -m 0755 %{_builddir}/%{name}-%{version}/tee-env-pre.sh %{buildroot}%{_bindir}/tee-env-pre.sh
+install -m 0644 %{_builddir}/%{name}-%{version}/tee-env-pre.service %{buildroot}%{_unitdir}/tee-env-pre.service
 # Install README.md to documentation directory
 install -d -m 0755 %{buildroot}%{_docdir}
 install -m 0644 %{_builddir}/%{name}-%{version}/README.md %{buildroot}%{_docdir}/README.md
@@ -62,16 +62,16 @@ fi
 # Execute after RPM installation
 # Reload systemd configuration
 systemctl daemon-reload
-systemctl enable sdf-pre.service
-systemctl start sdf-pre.service
+systemctl enable tee-env-pre.service
+systemctl start tee-env-pre.service
 
 %preun
 # Execute before RPM uninstallation
-%systemd_preun sdf-pre.service
+%systemd_preun tee-env-pre.service
 
 %postun
 # Execute after RPM uninstallation
-%systemd_postun_with_restart sdf-pre.service
+%systemd_postun_with_restart tee-env-pre.service
 
 %clean
 rm -rf %{buildroot}
@@ -80,9 +80,9 @@ rm -rf %{buildroot}
 # Define files in the package
 %defattr(-,root,root,-)
 %doc %{_docdir}/README.md
-%attr(755,root,root) %{_bindir}/sdf-pre.sh
-%config(noreplace) %{_unitdir}/sdf-pre.service
+%attr(755,root,root) %{_bindir}/tee-env-pre.sh
+%config(noreplace) %{_unitdir}/tee-env-pre.service
 
 %changelog
 * Fri Dec 12 2025 Xiangchao <xiangchao15@huawei.com> 1.0.0-1
-- Initial release of sdf-pre
+- Initial release of tee-env-pre

@@ -1,8 +1,8 @@
-# SDF Pre-Service RPM
+# Tee-env Pre-Service RPM
 
 ## 简介
 
-SDF Pre-Service是一个systemd服务，用于自动加载TEE（可信执行环境）内核模块并启动teecd守护进程。服务会监控这些组件，并在异常时自动恢复。
+Tee-env Pre-Service是一个systemd服务，用于自动加载TEE（可信执行环境）内核模块并启动teecd守护进程。服务会监控这些组件，并在异常时自动恢复。
 
 主要功能
 
@@ -31,11 +31,11 @@ chmod +x build-rpm.sh
 
 ## 安装RPM
 ```shell
-sudo rpm -ivh sdf-pre-1.0.0-1.aarch64.rpm
+sudo rpm -ivh tee-env-pre-1.0.0-1.aarch64.rpm
 ```
-## 启动sdf-pre服务
+## 启动tee-env-pre服务
 ```shell
-sudo systemctl start sdf-pre.service
+sudo systemctl start tee-env-pre.service
 ```
 ## 日志
-• 位置：/var/log/sdf-pre.log
+• 位置：/var/log/tee-env-pre.log
