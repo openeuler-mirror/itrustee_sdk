@@ -5,7 +5,7 @@
  */
 #ifndef SDF_H
 #define SDF_H
-#include<stdint.h>
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -38,7 +38,7 @@ extern "C" {
 #define SDR_RANDERR             (SDR_BASE + 0x00000017)
 #define SDR_PRKRERR             (SDR_BASE + 0x00000018)
 #define SDR_MACERR              (SDR_BASE + 0x00000019)
-#define SDR_FILEEXSITS          (SDR_BASE + 0x0000001A)
+#define SDR_FILEEXISTS          (SDR_BASE + 0x0000001A)
 #define SDR_FILEWERR            (SDR_BASE + 0x0000001B)
 #define SDR_NOBUFFER            (SDR_BASE + 0x0000001C)
 #define SDR_INARGERR            (SDR_BASE + 0x0000001D)
@@ -47,6 +47,7 @@ extern "C" {
 #define SDR_PASSWDERR           (SDR_BASE + 0x00000020)
 #define SDR_SHORT_BUFFER        (SDR_BASE + 0x00000021)
 #define SDR_SELFTESTERR         (SDR_BASE + 0x00000022)
+#define SDR_FIND_ORIGIN_KEK     (SDR_BASE + 0x00000023)
 #define SDR_BUSY                (SDR_BASE + 0x10000001)
 #define SDR_DUPLIPWD            (SDR_BASE + 0x00A00001)
 
@@ -70,6 +71,7 @@ extern "C" {
 #define CRYPT_KEY_LENGTH 16
 #define IV_LENGTH 16
 #define TAG_LENGTH 16
+#define STARTVAR_LENGTH 12
 #define NONCE_LENGTH 64
 #define PASSWORD_MAX_LEN 128
 #define STRONG_PASSWORD_COUNT 2
@@ -78,15 +80,12 @@ extern "C" {
 #define ITERATIONS 10000
 #define MAX_USERNAME_LEN 256
 
-#define MAX_KEYS 1000
+#define MAX_KEYS 2048
 #define MAX_PASSWORD_LENGTH 128
 #define KEY_INFO_LEN 8
 #define KEY_SHIFT_BITS 4
 #define KEY_FILENAME_LEN 12
 #define SALT_LEN 16
-#define MAX_CA_PATH 256
-#define CA_INFO_LEN 32
-
 
 typedef struct KeyHandle_st {
     unsigned char *KeyName;
@@ -180,6 +179,15 @@ struct CryptKeyHandle {
     uint8_t nonce[NONCE_LENGTH];
 };
 
+typedef struct EnvelopedKey_st {
+    unsigned int Version;
+    unsigned int ulSymmAlgID;
+    unsigned int ulBits;
+    unsigned char cbEncryptedKey[ECCref_MAX_LEN];
+    ECCrefPublicKey PubKey;
+    ECCCipher ECCCipherBlob;
+}ECCEnvelopedKey;
+
 enum GmKeyAlgorithm {
     SGD_SM4_ECB       = 0x00000401,
     SGD_SM4_CBC       = 0x00000402,
@@ -195,7 +203,7 @@ enum GmKeyAlgorithm {
 };
 
 enum SDFAlgorithm {
-    SDF_INVALID  = 0x00000000,
+    SDF_INVALID  = 0xFFFFFFFF,
     SDF_SM2_SIGN = 0x00000800,
     SDF_SM2_ENC  = 0x00000000,
     SDF_SM4      = 0x00000003,
@@ -223,9 +231,9 @@ typedef struct RSArefPrivateKey_st {
 
 int SDF_OpenDevice(void **phDeviceHandle);
 
-int SDF_CloseDevice(void *hDeviceHandle);
+int SDF_OpenDeviceWithConf(void **phDeviceHandle, const char* configFile);
 
-int SDF_OpenSessionWithConf(void *hDeviceHandle, const char* configFile);
+int SDF_CloseDevice(void *hDeviceHandle);
 
 int SDF_OpenSession(void *hDeviceHandle, void **phSessionHandle);
 
@@ -238,7 +246,12 @@ int SDF_GenerateRandom(void *hSessionHandle, unsigned int uiLength, unsigned cha
 int SDF_GetPrivateKeyAccessRight(void *hSessionHandle, unsigned int uiKeyIndex, unsigned char *pucPassword,
     unsigned int uiPwdLength);
 
+int SDF_GetKEKAccessRight(void *hSessionHandle, unsigned int uiKeyIndex, unsigned char *pucPassword,
+    unsigned int uiPwdLength);
+
 int SDF_ReleasePrivateKeyAccessRight(void *hSessionHandle, unsigned int uiKeyIndex);
+
+int SDF_ReleaseKEKAccessRight(void *hSessionHandle, unsigned int uiKeyIndex);
 
 int SDF_CreateFile(void *hSessionHandle, unsigned char *pucFileName, unsigned int uiNameLen, unsigned int uiFileSize);
 
@@ -387,34 +400,46 @@ int ECM_ExportKey(void *hSessionHandle, unsigned int uiKeyIndex,
 
 int ECM_ImportKey(void *hSessionHandle, unsigned int uiKeyIndex,
     unsigned char *keyFileBuffer, unsigned int keyBufferLength, unsigned char *keySalt);
-
-int ECM_SetAccessRight(void *hSessionHandle, unsigned int uiKeyIndex, unsigned char *pucAccessInfo,
-    unsigned char *pucPassword, unsigned int uiPwdLength);
-
-int ECM_DelAccessRight(void *hSessionHandle, unsigned int uiKeyIndex, unsigned char *pucAccessInfo,
-    unsigned char *pucPassword, unsigned int uiPwdLength);
-
+int ECM_ImportKeyPair_ECC(void* hSessionHandle, unsigned int uiKeyIndex, unsigned char *pucPassword,
+    unsigned int uiPwdLength, ECCrefPublicKey* pucPublicKey, ECCrefPrivateKey* pucPrivateKey);
+int ECM_ImportKEK(void* hSessionHandle, unsigned int uiKeyIndex, unsigned char *pucPassword,
+    unsigned int uiPwdLength, unsigned char *KEKBuf, unsigned int KEKLen);
+int ECM_ImportKeyWithEnvelop(void *hSessionHandle, unsigned int uiKeyIndex,
+    unsigned char *pucPassword, unsigned int pucPasswordLen, ECCEnvelopedKey *pucEnvelopKey);
+int ECM_ExportKeyWithEnvelop(void *hSessionHandle, unsigned int uiKeyIndex,
+    unsigned char *pucPassword, unsigned int pucPasswordLen,
+    ECCrefPublicKey *pucPublicKey, ECCEnvelopedKey *pucEnvelopKey);
 int ECM_FactoryReset();
 int SDF_AuthEnc(void *hSessionHandle, void *hKeyHandle, unsigned int uiAlgID, unsigned char *pucStartVar,
     unsigned int uiStartVarLength, unsigned char *pucAad, unsigned int uiAadLength, unsigned char *pucData,
     unsigned int uiDataLength, unsigned char *pucEncData, unsigned int *puiEncDataLength,
-    unsigned char *pucAuthData, unsigned int *uiAuthDataLength);
+    unsigned char *pucAuthData, unsigned int *puiAuthDataLength);
 int SDF_AuthDec(void *hSessionHandle, void *hKeyHandle, unsigned int uiAlgID, unsigned char *pucStartVar,
     unsigned int uiStartVarLength, unsigned char *pucAad, unsigned int uiAadLength, unsigned char *pucAuthData,
     unsigned int *puiAuthDataLength, unsigned char *pucEncData, unsigned int uiEncDataLength,
     unsigned char *pucData, unsigned int *puiDataLength);
-int SDF_AuthEncInit(void* hSessionHandle, void* hKeyHandle, unsigned int uiAlgID, unsigned char *pucStartVar,
-    unsigned int uiStartVarLength, unsigned char* pucAad, unsigned int uiAadLength, unsigned int uiDataLength);
-int SDF_EncUpdate(void *hSessionHandle, unsigned char *pucData, unsigned int uiDataLength, unsigned char *putEncData,
-                  unsigned int *puiEncDataLength);
+int SDF_AuthEncInit(void *hSessionHandle, void *hKeyHandle, unsigned int uiAlgID, unsigned char *pucStartVar,
+    unsigned int uiStartVarLength, unsigned char *pucAad, unsigned int uiAadLength, unsigned int uiDataLength);
+int SDF_AuthEncUpdate(void *hSessionHandle, unsigned char *pucData, unsigned int uiDataLength,
+    unsigned char *putEncData, unsigned int *puiEncDataLength);
 int SDF_AuthEncFinal(void *hSessionHandle, unsigned char *pucLastEncData, unsigned int *puiLastEncDataLength,
-                     unsigned char *pucAuthData, unsigned int *puiAuthDataLength);
+    unsigned char *pucAuthData, unsigned int *puiAuthDataLength);
 int SDF_AuthDecInit(void *hSessionHandle, void *hKeyHandle, unsigned int uiAlgID, unsigned char *pucStartVar,
-    unsigned long uiStartVarLength, unsigned char *pucAad, unsigned long uiAadLength, unsigned char *pucAuthData,
-    unsigned long uiAuthDataLength, unsigned long uiDataLength);
+    unsigned int uiStartVarLength, unsigned char *pucAad, unsigned int uiAadLength, unsigned char *pucAuthData,
+    unsigned int uiAuthDataLength, unsigned int uiDataLength);
 int SDF_AuthDecUpdate(void *hSessionHandle, unsigned char *pucEncData, unsigned int uiEncDataLength,
     unsigned char *pucData, unsigned int *puiDataLength);
 int SDF_AuthDecFinal(void *hSessionHandle, unsigned char *pucLastData, unsigned int *puiLastDataLength);
+int SDF_EncryptInit(void *hSessionHandle, void *hKeyHandle, unsigned int uiAlgID, unsigned char *pucIV,
+    unsigned int uiIVLength);
+int SDF_EncryptUpdate(void *hSessionHandle, unsigned char *pucData, unsigned int uiDataLength,
+    unsigned char *pucEncData, unsigned int *puiEncDataLength);
+int SDF_EncryptFinal(void *hSessionHandle, unsigned char *pucLastEncData, unsigned int *puiLastEncDataLength);
+int SDF_DecryptInit(void *hSessionHandle, void *hKeyHandle, unsigned int uiAlgID, unsigned char *pucIV,
+    unsigned int uiIVLength);
+int SDF_DecryptUpdate(void *hSessionHandle, unsigned char *pucEncData, unsigned int uiEncDataLength,
+    unsigned char *pucData, unsigned int *puiDataLength);
+int SDF_DecryptFinal(void *hSessionHandle, unsigned char *pucLastData, unsigned int *puiLastDataLength);
 #ifdef __cplusplus
 }
 #endif
