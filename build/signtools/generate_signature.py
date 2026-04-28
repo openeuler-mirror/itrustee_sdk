@@ -84,6 +84,68 @@ def get_str_array(code_str):
     return get_array(code_str.split(','))
 
 
+def gen_jar_path():
+    """ get jar path """
+    jar_path = os.getenv("NATIVE_CA_SIGN_JAR_PATH")
+    if not jar_path:
+        logging.critical("Set jar tool path: like /home/tools/signcenter/NativeCASign.jar")
+        raise FileNotFoundError("Jar path NATIVE_CA_SIGN_JAR_PATH not set")
+
+    return jar_path
+
+
+def sign_with_pki_server(raw_data, raw_data_path, out_file_path):
+    """ sign with remote sign server """
+    jar_path = gen_jar_path()
+
+    # check whether the jar file exists
+    if not os.path.isfile(jar_path):
+        logging.critical("Jar file not found: {}".format(jar_path))
+        raise FileNotFoundError("Jar file not found: {}".format(jar_path))
+
+    # check whether the sign.xml file exists
+    sign_xml_path = "./sign.xml"
+    if not os.path.isfile(sign_xml_path):
+        logging.critical("Sign xml file not found: {}".format(sign_xml_path))
+        raise FileNotFoundError("Sign xml file not found: {}".format(sign_xml_path))
+
+    # prepare data_for_sign
+    fd_data_for_sign = os.open(raw_data_path, os.O_WRONLY | os.O_CREAT, \
+        stat.S_IWUSR | stat.S_IRUSR)
+    data_for_sign_fp = os.fdopen(fd_data_for_sign, "wb")
+    data_for_sign_fp.write(raw_data)
+    data_for_sign_fp.close()
+
+    cmd = [
+        "sed", "-i",
+        "/<file>/,/<\\/file>/s#<file>.*</file>#<file>{}</file>#g".format(raw_data_path),
+        "./sign.xml"
+    ]
+
+    try:
+        subprocess.check_output(cmd, shell=False)
+    except Exception as e:
+        logging.error("generate sign xml failed")
+        raise RuntimeError from e
+
+    cmd = "java -jar {} {}".format(jar_path, "./sign.xml")
+    try:
+        logging.info("signing...")
+        subprocess.check_output(cmd.split(), shell=False)
+    except Exception as e:
+        logging.error("sign operation failed")
+        raise RuntimeError from e
+
+    signature_file_path = "{}.rsa".format(raw_data_path)
+    cmd = "mv {} {}".format(signature_file_path, out_file_path)
+    try:
+        subprocess.check_output(cmd.split(), shell=False)
+    except Exception as e:
+        logging.error("mv signature file failed")
+        raise RuntimeError from e
+    logging.info("out_file_path: {}".format(out_file_path))
+
+
 def gen_ta_signature(cfg, uuid_str, raw_data, raw_data_path, hash_file_path, \
     out_file_path, out_path, key_info_data, temp_path):
     msg_file = os.path.join(out_path, "temp", "config_msg")
@@ -131,6 +193,8 @@ def gen_ta_signature(cfg, uuid_str, raw_data, raw_data_path, hash_file_path, \
                 logging.error("sign operation failed")
                 print("========================== sign error =====================================")
                 raise RuntimeError
+    elif cfg.sign_type == '3': # signed with sign server
+        sign_with_pki_server(raw_data, raw_data_path, out_file_path)
     else:
         logging.error("unhandled signtype %s", cfg.sign_type)
 
