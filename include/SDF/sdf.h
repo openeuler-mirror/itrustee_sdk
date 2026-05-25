@@ -6,6 +6,9 @@
 #ifndef SDF_H
 #define SDF_H
 #include <stdint.h>
+#include <stddef.h>
+#include <stdbool.h>
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -48,18 +51,29 @@ extern "C" {
 #define SDR_SHORT_BUFFER        (SDR_BASE + 0x00000021)
 #define SDR_SELFTESTERR         (SDR_BASE + 0x00000022)
 #define SDR_FIND_ORIGIN_KEK     (SDR_BASE + 0x00000023)
+#define SDR_FILEOPENERR         (SDR_BASE + 0x00000024)
+#define SDR_FILEPARSEERR        (SDR_BASE + 0x00000025)
+#define SDR_FILECLOSEERR        (SDR_BASE + 0X00000026)
+#define SDR_SLEFTEST_SM2_ERR    (SDR_BASE + 0X00000027)
+#define SDR_SELFTEST_SM3_ERR    (SDR_BASE + 0X00000028)
+#define SDR_SELFTEST_SM4_ERR    (SDR_BASE + 0X00000029)
+#define SDR_SELFTEST_RANDOM_ERR (SDR_BASE + 0X00000030)
 #define SDR_BUSY                (SDR_BASE + 0x10000001)
 #define SDR_DUPLIPWD            (SDR_BASE + 0x00A00001)
 
-
-#define MAX_SDF_DEVICE_NUM 50
-#define MAX_SDFSession_NUM 1000
 #define MAX_SDF_AGREEMENT_KEY_LENGTH 128
 #define MAX_SDF_SPONSOR_ID_LENGTH 128
 #define MAX_SDF_RESPONSE_ID_LENGTH 128
 #define AGREEMENT_ID_MAX_LEN 64
 #define PASSWORD_LEN 128
 #define ECCref_MAX_LEN 64
+#ifdef SDF_CRYPTO_HYBRID
+#define HYBRIDSIGref_MAX_LEN 4636
+#define HYBRIDENCref_MAX_LEN 21937
+#define HYBRIDENCref_ECC_FIXED_LEN 32
+#define HYBRID_PUBKEY_MAX_BYTES 18825
+#define HYBRID_PRIKEY_MAX_BYTES 21936
+#endif
 #define SM2_KEY_BYTES 32
 #define SM4_KEY_BYTES 16
 #define ISSUER_NAME_LENGTH 40
@@ -122,6 +136,21 @@ typedef struct ECCSignature_st {
     unsigned char s[ECCref_MAX_LEN];
 } ECCSignature;
 
+#ifdef SDF_CRYPTO_HYBRID
+typedef struct HybridCipher_st {
+    unsigned int L1;
+    unsigned char *ct_m;
+    unsigned int uiAlgID;
+    ECCCipher ct_s;
+} HybridCipher;
+
+typedef struct HybridSignature_st {
+    ECCSignature sig_s;
+    unsigned int L;
+    unsigned char *sig_m;
+} HybridSignature;
+#endif
+
 typedef struct {
     unsigned int keyIndex;
     unsigned int DerivedKeySize;
@@ -177,6 +206,7 @@ struct CryptKeyHandle {
     uint8_t IV[IV_LENGTH];
     uint8_t tag[TAG_LENGTH];
     uint8_t nonce[NONCE_LENGTH];
+    uint8_t key[];
 };
 
 typedef struct EnvelopedKey_st {
@@ -200,6 +230,27 @@ enum GmKeyAlgorithm {
     SGD_SM3           = 0x00000001,
     SGD_SM3_MAC       = 0x00100001,
     SGD_SM2           = 0x00020100,
+#ifdef SDF_CRYPTO_HYBRID
+    // The reserved range for user-defined encoding formats mentioned in the specifications is 0x80000000 to 0xFF000000.
+    SGD_HYBRID_ENV_SM2_MLKEM_512 = 0x80000000,
+    SGD_HYBRID_ENV_SM2_MLKEM_768 = 0x80000001,
+    SGD_HYBRID_ENV_SM2_MLKEM_1024 = 0x80000002,
+    SGD_HYBRID_ENV_SM2_POLAR_LAC_LIGHT = 0x80000003,
+    SGD_COMPOSITE_MLDSA44_SM2 = 0x80000004,
+    SGD_COMPOSITE_MLDSA65_SM2 = 0x80000005,
+    SGD_COMPOSITE_MLDSA87_SM2 = 0x80000006,
+    SGD_HYBRID_ENV_SM2_SCLOUDPLUS_128 = 0x80000007,
+    SGD_HYBRID_ENV_SM2_SCLOUDPLUS_192 = 0x80000008,
+    SGD_HYBRID_ENV_SM2_SCLOUDPLUS_256 = 0x80000009,
+#endif
+};
+
+enum SDFPaddingType {
+    SGD_NONE = 0,         /**< Never pad (full blocks only).   */
+    SGD_ZEROS,            /**< Zero padding (not reversible).  */
+    SGD_PKCS5,            /**< PKCS5 padding.                  */
+    SGD_PKCS7,            /**< PKCS7 padding.                  */
+    SGD_MAX_COUNT
 };
 
 enum SDFAlgorithm {
@@ -207,6 +258,9 @@ enum SDFAlgorithm {
     SDF_SM2_SIGN = 0x00000800,
     SDF_SM2_ENC  = 0x00000000,
     SDF_SM4      = 0x00000003,
+#ifdef SDF_CRYPTO_HYBRID
+    SDF_HYBRID   = 0x00000FFF,
+#endif
 };
 
 #define RSAref_MAX_BITS 2048
@@ -343,7 +397,7 @@ int SDF_ExternalDecrypt_ECC(void *hSessionHandle, unsigned int uiAlgID, ECCrefPr
     ECCCipher *pucEncData, unsigned char *pucData, unsigned int *puiDataLength);
 
 int SDF_ExternalEncrypt_ECC(void *hSessionHandle, unsigned int uiAlgID, ECCrefPublicKey *pucPublicKey,
-    unsigned char *pucData, unsigned int uiDataLength, ECCCipher *pucEncature);
+    unsigned char *pucData, unsigned int uiDataLength, ECCCipher *pucEncData);
 
 int SDF_ImportKey(void *hSessionHandle, unsigned char *pucKey, unsigned int uiKeyLength, void **phKeyHandle);
 
@@ -391,6 +445,14 @@ int ECM_DeleteKey(void *hSessionHandle, unsigned int uiKeyIndex);
 
 int ECM_QueryKey(void *hSessionHandle, unsigned int uiKeyIndex, unsigned int *uiKeyInfo);
 
+int ECM_QueryECMPasswd(void *hSessionHandle);
+
+int ECM_InitECMPasswd(void *hSessionHandle, char *derived_default_ecm_passwd);
+
+int ECM_CheckECMPasswd(void *hSessionHandle, char *input_ecm_passwd, size_t input_ecm_passwd_len);
+
+int ECM_ChangeECMPasswd(void *hSessionHandle, char *new_password, size_t new_password_len);
+
 int ECM_ChangePassword(void *hSessionHandle, unsigned int uiKeyIndex,
     unsigned char *prePassword, unsigned int prePasswordLen,
     unsigned char *newPassword, unsigned int newPasswordLen);
@@ -405,11 +467,11 @@ int ECM_ImportKeyPair_ECC(void* hSessionHandle, unsigned int uiKeyIndex, unsigne
 int ECM_ImportKEK(void* hSessionHandle, unsigned int uiKeyIndex, unsigned char *pucPassword,
     unsigned int uiPwdLength, unsigned char *KEKBuf, unsigned int KEKLen);
 int ECM_ImportKeyWithEnvelop(void *hSessionHandle, unsigned int uiKeyIndex,
-    unsigned char *pucPassword, unsigned int pucPasswordLen, ECCEnvelopedKey *pucEnvelopKey);
+    unsigned char *pucPassword, unsigned int uiPwdLength, ECCEnvelopedKey *pucEnvelopKey);
 int ECM_ExportKeyWithEnvelop(void *hSessionHandle, unsigned int uiKeyIndex,
-    unsigned char *pucPassword, unsigned int pucPasswordLen,
+    unsigned char *pucPassword, unsigned int uiPwdLength,
     ECCrefPublicKey *pucPublicKey, ECCEnvelopedKey *pucEnvelopKey);
-int ECM_FactoryReset();
+int ECM_FactoryReset(void);
 int SDF_AuthEnc(void *hSessionHandle, void *hKeyHandle, unsigned int uiAlgID, unsigned char *pucStartVar,
     unsigned int uiStartVarLength, unsigned char *pucAad, unsigned int uiAadLength, unsigned char *pucData,
     unsigned int uiDataLength, unsigned char *pucEncData, unsigned int *puiEncDataLength,
@@ -421,7 +483,7 @@ int SDF_AuthDec(void *hSessionHandle, void *hKeyHandle, unsigned int uiAlgID, un
 int SDF_AuthEncInit(void *hSessionHandle, void *hKeyHandle, unsigned int uiAlgID, unsigned char *pucStartVar,
     unsigned int uiStartVarLength, unsigned char *pucAad, unsigned int uiAadLength, unsigned int uiDataLength);
 int SDF_AuthEncUpdate(void *hSessionHandle, unsigned char *pucData, unsigned int uiDataLength,
-    unsigned char *putEncData, unsigned int *puiEncDataLength);
+    unsigned char *pucEncData, unsigned int *puiEncDataLength);
 int SDF_AuthEncFinal(void *hSessionHandle, unsigned char *pucLastEncData, unsigned int *puiLastEncDataLength,
     unsigned char *pucAuthData, unsigned int *puiAuthDataLength);
 int SDF_AuthDecInit(void *hSessionHandle, void *hKeyHandle, unsigned int uiAlgID, unsigned char *pucStartVar,
@@ -440,6 +502,100 @@ int SDF_DecryptInit(void *hSessionHandle, void *hKeyHandle, unsigned int uiAlgID
 int SDF_DecryptUpdate(void *hSessionHandle, unsigned char *pucEncData, unsigned int uiEncDataLength,
     unsigned char *pucData, unsigned int *puiDataLength);
 int SDF_DecryptFinal(void *hSessionHandle, unsigned char *pucLastData, unsigned int *puiLastDataLength);
+int SDF_GetCpuUsage(void *hSessionHandle, double *pdCpuUsage);
+int SDF_GetMemUsage(void *hSessionHandle, double *pdMemUsage);
+
+int SDF_ExternalHashInit(void *hSessionHandle, unsigned int uiAlgID);
+
+int SDF_ExternalHashUpdate(void *hSessionHandle, unsigned char *pucData, unsigned int uiDataLength);
+
+int SDF_ExternalHashFinal(void *hSessionHandle, unsigned char *pucHash, unsigned int *puiHashLength);
+
+int SDF_ExternalKeyEncrypt(void *hSessionHandle, unsigned char *pucKey, unsigned int uikeyLen, unsigned int uiAlgID,
+    unsigned int uiPaddingMode, unsigned char *pucIV, unsigned char *pucData, unsigned int uiDataLength,
+    unsigned char *pucEncData, unsigned int *puiEncDataLength);
+
+int SDF_ExternalKeyDecrypt(void *hSessionHandle, unsigned char *pucKey, unsigned int uikeyLen, unsigned int uiAlgID,
+    unsigned int uiPaddingMode, unsigned char *pucIV, unsigned char *pucEncData, unsigned int uiEncDataLength,
+    unsigned char *pucData, unsigned int *puiDataLength);
+
+int SDF_ExternalKeyEncryptInit(void *hSessionHandle, unsigned char *pucKey, unsigned int uikeyLen, unsigned int uiAlgID,
+    unsigned int uiPaddingMode, unsigned char *pucIV, unsigned int uiIVLength);
+
+int SDF_ExternalKeyEncryptUpdate(void *hSessionHandle, unsigned char *pucData, unsigned int uiDataLength,
+    unsigned char *pucEncData, unsigned int *puiEncDataLength);
+
+int SDF_ExternalKeyEncryptFinal(void *hSessionHandle, unsigned char *pucLastEncData,
+    unsigned int *puiLastEncDataLength);
+
+int SDF_ExternalKeyDecryptInit(void *hSessionHandle, unsigned char *pucKey, unsigned int uikeyLen, unsigned int uiAlgID,
+    unsigned int uiPaddingMode, unsigned char *pucIV, unsigned int uiIVLength);
+
+int SDF_ExternalKeyDecryptUpdate(void *hSessionHandle, unsigned char *pucEncData, unsigned int uiEncDataLength,
+    unsigned char *pucData, unsigned int *puiDataLength);
+
+int SDF_ExternalKeyDecryptFinal(void *hSessionHandle, unsigned char *pucLastData, unsigned int *puiLastDataLength);
+
+int SDF_ExternalAuthEnc(void *hSessionHandle, unsigned char *pucKey, unsigned int uikeyLen, unsigned int uiAlgID,
+    unsigned char *pucStartVar, unsigned int uiStartVarLength, unsigned char *pucAad, unsigned int uiAadLength,
+    unsigned char *pucData, unsigned int uiDataLength, unsigned char *pucEncData, unsigned int *puiEncDataLength,
+    unsigned char *pucAuthData, unsigned int *puiAuthDataLength);
+
+int SDF_ExternalAuthDec(void *hSessionHandle, unsigned char *pucKey, unsigned int uikeyLen, unsigned int uiAlgID,
+    unsigned char *pucStartVar, unsigned int uiStartVarLength, unsigned char *pucAad, unsigned int uiAadLength,
+    unsigned char *pucAuthData, unsigned int uiAuthDataLength, unsigned char *pucEncData,
+    unsigned int uiEncDataLength, unsigned char *pucData, unsigned int *puiDataLength);
+
+int SDF_ExternalAuthEncInit(void *hSessionHandle, unsigned char *pucKey, unsigned int uikeyLen, unsigned int uiAlgID,
+    unsigned char *pucStartVar, unsigned int uiStartVarLength, unsigned char *pucAad, unsigned int uiAadLength);
+
+int SDF_ExternalAuthDecInit(void *hSessionHandle, unsigned char *pucKey, unsigned int uikeyLen, unsigned int uiAlgID,
+    unsigned char *pucStartVar, unsigned int uiStartVarLength, unsigned char *pucAad, unsigned int uiAadLength);
+
+int SDF_ExternalAuthEncUpdate(void *hSessionHandle, unsigned char *pucData, unsigned int uiDataLength,
+    unsigned char *pucEncData, unsigned int *puiEncDataLength);
+
+int SDF_ExternalAuthDecUpdate(void *hSessionHandle, unsigned char *pucEncData, unsigned int uiEncDataLength,
+    unsigned char *pucData, unsigned int *puiDataLength);
+
+int SDF_ExternalAuthEncFinal(void *hSessionHandle, unsigned char *pucAuthData, unsigned int *puiAuthDataLength,
+    unsigned char *pucLastData, unsigned int *puiLastDataLength);
+
+int SDF_ExternalAuthDecFinal(void *hSessionHandle, unsigned char *pucAuthData, unsigned int uiAuthDataLength,
+    unsigned char *pucLastData, unsigned int *puiLastDataLength);
+
+#ifdef SDF_CRYPTO_HYBRID
+int ECM_GenerateHybridKey(void *hSessionHandle, unsigned int uiKeyIndex, unsigned int uiAlgID,
+    unsigned char *pucPassword, unsigned int uiPwdLength);
+
+int ECM_DeleteHybridKey(void *hSessionHandle, unsigned int uiKeyIndex);
+
+int SDF_ExportPublicKey_Hybrid(void *hSessionHandle, unsigned int uiKeyIndex,
+    unsigned char *pucPublicKey, unsigned int *puiPublicKeyLength);
+
+int SDF_GenerateKeyWithEPK_Hybrid(void *hSessionHandle, unsigned int uiAlgID,
+    unsigned char *pucPublicKey, unsigned int *puiPublicKeyLength,
+    HybridCipher *pucEncData, void **phKeyHandle);
+
+int SDF_ImportKeyWithISK_Hybrid(void *hSessionHandle, unsigned int uiISKIndex,
+    HybridCipher *pucKey, void **phKeyHandle);
+
+int SDF_InternalSign_Composite(void *hSessionHandle, unsigned int uiISKIndex, unsigned char *pucData,
+    unsigned int uiDataLength, HybridSignature *pucSignature);
+
+int SDF_ExternalVerify_Composite(void *hSessionHandle, unsigned int uiAlgID, unsigned char *pucPublicKey,
+    unsigned int *puiPublicKeyLength, unsigned char *pucDataInput, unsigned int uiInputLength,
+    HybridSignature *pucSignature);
+#endif
+
+void input_password(char* password, size_t* password_len);
+
+void input_password_twice(char* password, size_t* password_len);
+
+int handle_change_ecm_password(void *hSessionHandle);
+
+bool rndr_random_bytes(void *buffer, size_t length);
+
 #ifdef __cplusplus
 }
 #endif
