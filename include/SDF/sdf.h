@@ -73,9 +73,16 @@ extern "C" {
 #define HYBRIDENCref_ECC_FIXED_LEN 32
 #define HYBRID_PUBKEY_MAX_BYTES 18825
 #define HYBRID_PRIKEY_MAX_BYTES 21936
+
+#define PQC_PUB_MAX_BYTES 2592
+#define PQC_ENCODE_MAX_BYTE 30
+#define PQC_SIG_MAX_BYTES 4627
+#define PQC_ENC_MAX_BYTES 1568
+
 #endif
 #define SM2_KEY_BYTES 32
 #define SM4_KEY_BYTES 16
+#define SM4_KEY_BITES 128
 #define ISSUER_NAME_LENGTH 40
 #define DEVICE_NAME_LENGTH 16
 #define DEVICE_SERIAL_LENGTH 16
@@ -242,6 +249,15 @@ enum GmKeyAlgorithm {
     SGD_HYBRID_ENV_SM2_SCLOUDPLUS_128 = 0x80000007,
     SGD_HYBRID_ENV_SM2_SCLOUDPLUS_192 = 0x80000008,
     SGD_HYBRID_ENV_SM2_SCLOUDPLUS_256 = 0x80000009,
+    SGD_PQC_ML_DSA_44 = 0x00090100,
+    SGD_PQC_ML_DSA_65 = 0x00090200,
+    SGD_PQC_ML_DSA_87 = 0x00090400,
+    SGD_PQC_AIGIS_SIG1 = 0x00200100,
+    SGD_PQC_AIGIS_SIG2 = 0x00200200,
+    SGD_PQC_AIGIS_SIG3 = 0x00200400,
+    SGD_PQC_ML_KEM_512 = 0x00400100,
+    SGD_PQC_ML_KEM_768 = 0x00400200,
+    SGD_PQC_ML_KEM_1024 = 0x00400400,
 #endif
 };
 
@@ -259,6 +275,9 @@ enum SDFAlgorithm {
     SDF_SM2_ENC  = 0x00000000,
     SDF_SM4      = 0x00000003,
 #ifdef SDF_CRYPTO_HYBRID
+    SGD_PQC_ML_DSA = 0x00000FF0,
+    SGD_PQC_AIGIS_SIG = 0x00000FF2,
+    SGD_PQC_ML_KEM = 0x00000FF3,
     SDF_HYBRID   = 0x00000FFF,
 #endif
 };
@@ -586,6 +605,36 @@ int SDF_InternalSign_Composite(void *hSessionHandle, unsigned int uiISKIndex, un
 int SDF_ExternalVerify_Composite(void *hSessionHandle, unsigned int uiAlgID, unsigned char *pucPublicKey,
     unsigned int *puiPublicKeyLength, unsigned char *pucDataInput, unsigned int uiInputLength,
     HybridSignature *pucSignature);
+
+int ECM_GenerateKey_PQC(void *hSessionHandle, unsigned int uiKeyIndex, unsigned int uiAlgID,
+    unsigned char *pucPassword, unsigned int uiPwdLength);
+
+int ECM_DeleteKey_PQC(void *hSessionHandle, unsigned int uiKeyIndex);
+
+int SDF_ExportPublicKey_PQC(void *hSessionHandle, unsigned int uiKeyIndex, unsigned int uiAlgID, unsigned int uiFormat,
+    unsigned char *pucPublicKey, unsigned int *puiPublicKeyLen);
+
+int SDF_InternalSign_PQC(void *hSessionHandle, unsigned int uiISKIndex, unsigned int uiAlgID, unsigned int uiFormat,
+    unsigned char *pucData, unsigned int uiDataLength, void *pucSign, unsigned int *puiSignLen);
+
+int SDF_ExternalVerify_PQC(void *hSessionHandle, unsigned int uiAlgID, unsigned char *pucPublicKey,
+    unsigned int uiPublicKeyLen, unsigned int uiFormat, unsigned char *pucData, unsigned int uiDataLength,
+    unsigned char *pucSign, unsigned int uiSignLen);
+
+int SDF_InternalVerify_PQC(void *hSessionHandle, unsigned int uiISKIndex, unsigned int uiAlgID, unsigned int uiFormat,
+    unsigned char *pucData, unsigned int uiDataLength, unsigned char *pucSign, unsigned int uiSignLen);
+
+int SDF_GenerateKeyWithEPK_PQC(void *hSessionHandle, unsigned int uiAlgID, unsigned int uiKeyBits,
+    unsigned int uiFormat, unsigned char *pucPublicKey, unsigned int puiPublicKeyLength,
+    unsigned char *pucKey, unsigned int *puiKeyLength, void **phKeyHandle);
+
+int SDF_ImportKeyWithISK_PQC(void *hSessionHandle, unsigned int uiKeyIndex, unsigned int uiAlgID,
+    unsigned int uiFormat, unsigned char *pucKey, unsigned int uiKeyLength, void **phKeyHandle);
+
+int SDF_GenerateKeyWithIPK_PQC(void *hSessionHandle, unsigned int uiKeyIndex, unsigned int uiAlgID,
+    unsigned int uiKeyBits, unsigned int uiFormat, unsigned char *pucKey, unsigned int *puiKeyLength,
+    void **phKeyHandle);
+
 #endif
 
 void input_password(char* password, size_t* password_len);
